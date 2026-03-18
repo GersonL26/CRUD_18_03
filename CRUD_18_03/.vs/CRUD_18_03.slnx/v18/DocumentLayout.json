@@ -1,0 +1,122 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03.application\\metadata\\entitymetadataprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|solutionrelative:crud_18_03.application\\metadata\\entitymetadataprovider.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03.application\\dtos\\ubicacion\\ubicaciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|solutionrelative:crud_18_03.application\\dtos\\ubicacion\\ubicaciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03.application\\dtos\\ubicacion\\actualizarubicaciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|solutionrelative:crud_18_03.application\\dtos\\ubicacion\\actualizarubicaciondto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03.application\\dtos\\ubicacion\\crearsucursaldto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{79A79329-FAF5-1F26-7BAE-0B5FDA110452}|CRUD_18_03.Application\\CRUD_18_03.Application.csproj|solutionrelative:crud_18_03.application\\dtos\\ubicacion\\crearsucursaldto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{6186E17F-49E5-7B0C-0248-8607AFC5B363}|CRUD_18_03.Domain\\CRUD_18_03.Domain.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03.domain\\entities\\ubicacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{6186E17F-49E5-7B0C-0248-8607AFC5B363}|CRUD_18_03.Domain\\CRUD_18_03.Domain.csproj|solutionrelative:crud_18_03.domain\\entities\\ubicacion.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{450368C7-8028-7F59-92D1-96A6751BA42B}|CRUD_18_03\\CRUD_18_03.csproj|c:\\users\\glopez\\documents\\github\\crud_18_03\\crud_18_03\\crud_18_03\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{450368C7-8028-7F59-92D1-96A6751BA42B}|CRUD_18_03\\CRUD_18_03.csproj|solutionrelative:crud_18_03\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 333,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "launchSettings.json",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03\\Properties\\launchSettings.json",
+              "RelativeDocumentMoniker": "CRUD_18_03\\Properties\\launchSettings.json",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03\\Properties\\launchSettings.json",
+              "RelativeToolTip": "CRUD_18_03\\Properties\\launchSettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-03-18T22:17:40.359Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Ubicacion.cs",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Domain\\Entities\\Ubicacion.cs",
+              "RelativeDocumentMoniker": "CRUD_18_03.Domain\\Entities\\Ubicacion.cs",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Domain\\Entities\\Ubicacion.cs",
+              "RelativeToolTip": "CRUD_18_03.Domain\\Entities\\Ubicacion.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T22:17:40.136Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "CrearSucursalDto.cs",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\CrearSucursalDto.cs",
+              "RelativeDocumentMoniker": "CRUD_18_03.Application\\DTOs\\Ubicacion\\CrearSucursalDto.cs",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\CrearSucursalDto.cs",
+              "RelativeToolTip": "CRUD_18_03.Application\\DTOs\\Ubicacion\\CrearSucursalDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T22:17:39.973Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ActualizarUbicacionDto.cs",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\ActualizarUbicacionDto.cs",
+              "RelativeDocumentMoniker": "CRUD_18_03.Application\\DTOs\\Ubicacion\\ActualizarUbicacionDto.cs",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\ActualizarUbicacionDto.cs",
+              "RelativeToolTip": "CRUD_18_03.Application\\DTOs\\Ubicacion\\ActualizarUbicacionDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T22:17:39.803Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "UbicacionDto.cs",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\UbicacionDto.cs",
+              "RelativeDocumentMoniker": "CRUD_18_03.Application\\DTOs\\Ubicacion\\UbicacionDto.cs",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\DTOs\\Ubicacion\\UbicacionDto.cs",
+              "RelativeToolTip": "CRUD_18_03.Application\\DTOs\\Ubicacion\\UbicacionDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T22:17:39.625Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "EntityMetadataProvider.cs",
+              "DocumentMoniker": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\Metadata\\EntityMetadataProvider.cs",
+              "RelativeDocumentMoniker": "CRUD_18_03.Application\\Metadata\\EntityMetadataProvider.cs",
+              "ToolTip": "C:\\Users\\glopez\\Documents\\GitHub\\CRUD_18_03\\CRUD_18_03\\CRUD_18_03.Application\\Metadata\\EntityMetadataProvider.cs",
+              "RelativeToolTip": "CRUD_18_03.Application\\Metadata\\EntityMetadataProvider.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-03-18T22:17:39.469Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
