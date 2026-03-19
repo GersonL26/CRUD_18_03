@@ -25,18 +25,6 @@ public class AnalisisController : ControllerBase
         return StatusCode(201, resultado);
     }
 
-    [HttpGet("{candidatoId:guid}")]
-    public async Task<IActionResult> ObtenerResultado(Guid candidatoId)
-    {
-        var evaluadorId = ObtenerUsuarioId();
-        var resultado = await _analisisService.ObtenerResultadoAsync(candidatoId, evaluadorId);
-
-        if (resultado is null)
-            return NotFound(new { message = "El análisis aún no ha sido generado para este candidato." });
-
-        return Ok(resultado);
-    }
-
     private Guid ObtenerUsuarioId()
         => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? throw new UnauthorizedAccessException("Token de usuario inválido."));

@@ -89,18 +89,6 @@ public class AnalisisService : IAnalisisService
         return MapToCompletoDto(candidato, resultado);
     }
 
-    public async Task<ResultadoCompletoDto?> ObtenerResultadoAsync(Guid candidatoId, Guid evaluadorId)
-    {
-        var candidato = await ObtenerCandidatoConDatos(candidatoId);
-
-        ValidarPropietario(candidato.Evaluacion!, evaluadorId);
-
-        if (candidato.Resultado is null)
-            return null;
-
-        return MapToCompletoDto(candidato, candidato.Resultado);
-    }
-
     // --- Helpers privados ---
 
     private async Task<Candidato> ObtenerCandidatoConDatos(Guid candidatoId)

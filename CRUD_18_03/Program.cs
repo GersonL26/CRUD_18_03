@@ -32,6 +32,7 @@ builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
 builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 builder.Services.AddHttpClient<IAnalizadorIA, AnalizadorPowerAutomate>();
 builder.Services.AddScoped<IAnalisisService, AnalisisService>();
+builder.Services.AddScoped<IResultadoService, ResultadoService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
