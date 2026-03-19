@@ -22,11 +22,11 @@ public class AuthService : IAuthService
     {
         var usuario = await _dbContext.Usuarios
             .FirstOrDefaultAsync(u => u.Email == loginDto.Email && u.EstaActivo)
-            ?? throw new UnauthorizedAccessException("Credenciales inválidas.");
+            ?? throw new InvalidOperationException("Credenciales inválidas.");
 
         var passwordValida = BCrypt.Net.BCrypt.Verify(loginDto.Password, usuario.PasswordHash);
         if (!passwordValida)
-            throw new UnauthorizedAccessException("Credenciales inválidas.");
+            throw new InvalidOperationException("Credenciales inválidas.");
 
         var token = _jwtService.GenerarToken(usuario);
 

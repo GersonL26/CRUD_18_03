@@ -21,6 +21,4 @@ public class ActualizarEvaluacionDto
 
     public bool? RequiereCamara { get; set; }
     public bool? RequiereMicrofono { get; set; }
-
-    public EstadoEvaluacion? Estado { get; set; }
 }

@@ -27,8 +27,8 @@ public class GlobalExceptionMiddleware
         }
         catch (UnauthorizedAccessException ex)
         {
-            _logger.LogWarning(ex, "Acceso no autorizado");
-            await WriteResponse(context, HttpStatusCode.Unauthorized, ex.Message);
+            _logger.LogWarning(ex, "Acceso prohibido");
+            await WriteResponse(context, HttpStatusCode.Forbidden, ex.Message);
         }
         catch (InvalidOperationException ex)
         {

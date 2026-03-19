@@ -27,6 +27,7 @@ builder.Services.AddSingleton<IEntityMapper, ReflectionEntityMapper>();
 builder.Services.AddScoped<IGenericService, GenericService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
