@@ -2,6 +2,7 @@ using System.Text;
 using CRUD_18_03.Application.Interfaces;
 using CRUD_18_03.Application.Mapping;
 using CRUD_18_03.Application.Metadata;
+using CRUD_18_03.Infrastructure.AI;
 using CRUD_18_03.Infrastructure.OpenApi;
 using CRUD_18_03.Infrastructure.Persistence;
 using CRUD_18_03.Infrastructure.Services;
@@ -29,6 +30,8 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
 builder.Services.AddScoped<ICandidatoService, CandidatoService>();
+builder.Services.AddHttpClient<IAnalizadorIA, AnalizadorPowerAutomate>();
+builder.Services.AddScoped<IAnalisisService, AnalisisService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
