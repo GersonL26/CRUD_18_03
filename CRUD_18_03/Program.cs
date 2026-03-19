@@ -28,6 +28,7 @@ builder.Services.AddScoped<IGenericService, GenericService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IEvaluacionService, EvaluacionService>();
+builder.Services.AddScoped<ICandidatoService, CandidatoService>();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
