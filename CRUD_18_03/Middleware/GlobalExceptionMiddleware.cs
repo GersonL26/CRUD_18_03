@@ -25,6 +25,11 @@ public class GlobalExceptionMiddleware
             _logger.LogWarning(ex, "Recurso no encontrado");
             await WriteResponse(context, HttpStatusCode.NotFound, ex.Message);
         }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Acceso no autorizado");
+            await WriteResponse(context, HttpStatusCode.Unauthorized, ex.Message);
+        }
         catch (InvalidOperationException ex)
         {
             _logger.LogWarning(ex, "Operación inválida");

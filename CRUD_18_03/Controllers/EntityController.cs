@@ -3,12 +3,14 @@ using System.Reflection;
 using System.Text.Json;
 using CRUD_18_03.Application.Interfaces;
 using CRUD_18_03.Application.Metadata;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CRUD_18_03.Controllers;
 
 [ApiController]
 [Route("api/entity/{entityName}")]
+[Authorize]
 public class EntityController : ControllerBase
 {
     private readonly IGenericService _service;
@@ -113,6 +115,25 @@ public class EntityController : ControllerBase
         return Ok(new { message = $"{entityName} eliminado correctamente." });
     }
 
+    [HttpGet("filter")]
+    public async Task<IActionResult> GetByFilter(string entityName, [FromQuery] string property, [FromQuery] string value)
+    {
+        var metadata = _metadataProvider.GetMetadata(entityName);
+        if (metadata is null)
+            return NotFound(new { message = $"Entidad '{entityName}' no registrada." });
+
+        var prop = metadata.EntityType.GetProperty(property, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+        if (prop is null)
+            return BadRequest(new { message = $"La propiedad '{property}' no existe en '{entityName}'." });
+
+        var typedValue = ConvertFilterValue(value, prop.PropertyType);
+        if (typedValue is null)
+            return BadRequest(new { message = $"No se pudo convertir '{value}' al tipo '{prop.PropertyType.Name}'." });
+
+        var result = await _service.GetByFilterAsync(metadata.EntityType, metadata.ResponseDtoType, prop.Name, typedValue);
+        return Ok(result);
+    }
+
     [HttpGet("schema")]
     public IActionResult GetSchema(string entityName)
     {
@@ -179,6 +200,30 @@ public class EntityController : ControllerBase
         if (type == typeof(Guid)) return "guid";
         if (type == typeof(DateTime)) return "datetime";
 
+        if (type.IsEnum) return "enum:" + string.Join("|", Enum.GetNames(type));
+
         return type.Name.ToLowerInvariant();
+    }
+
+    private static object? ConvertFilterValue(string value, Type targetType)
+    {
+        var underlying = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+        try
+        {
+            if (underlying == typeof(Guid)) return Guid.Parse(value);
+            if (underlying == typeof(int)) return int.Parse(value);
+            if (underlying == typeof(bool)) return bool.Parse(value);
+            if (underlying == typeof(double)) return double.Parse(value);
+            if (underlying == typeof(decimal)) return decimal.Parse(value);
+            if (underlying == typeof(DateTime)) return DateTime.Parse(value);
+            if (underlying == typeof(string)) return value;
+            if (underlying.IsEnum) return Enum.Parse(underlying, value, ignoreCase: true);
+            return Convert.ChangeType(value, underlying);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
