@@ -34,6 +34,21 @@ public class ReportesController : ControllerBase
         return File(pdfBytes, "application/pdf", nombreArchivo);
     }
 
+    [HttpGet("evaluacion/{evaluacionId:guid}/ranking-pdf")]
+    public async Task<IActionResult> DescargarRankingPDF(Guid evaluacionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var ranking = await _resultadoService.ObtenerRankingAsync(evaluacionId, evaluadorId);
+
+        if (ranking.TotalAnalizados == 0)
+            return NotFound(new { message = "No hay candidatos analizados para generar el ranking." });
+
+        var pdfBytes = _generadorPDF.GenerarReporteRanking(ranking);
+        var nombreArchivo = $"ranking-{ranking.Titulo.Replace(" ", "_")}.pdf";
+
+        return File(pdfBytes, "application/pdf", nombreArchivo);
+    }
+
     private Guid ObtenerUsuarioId()
         => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? throw new UnauthorizedAccessException("Token de usuario inválido."));

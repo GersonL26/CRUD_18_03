@@ -5,4 +5,5 @@ namespace CRUD_18_03.Application.Interfaces;
 public interface IGeneradorPDF
 {
     byte[] GenerarReporteCandidato(ResultadoCompletoDto resultado);
+    byte[] GenerarReporteRanking(RankingEvaluacionDto ranking);
 }

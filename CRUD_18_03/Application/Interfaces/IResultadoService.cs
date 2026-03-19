@@ -9,4 +9,8 @@ public interface IResultadoService
     Task<ResumenEvaluacionResultadosDto> ObtenerResumenEvaluacionAsync(Guid evaluacionId, Guid evaluadorId);
 
     Task<ResultadoCandidatoPublicoDto> ObtenerResultadoPorTokenAsync(string token);
+
+    Task<RankingEvaluacionDto> ObtenerRankingAsync(Guid evaluacionId, Guid evaluadorId);
+
+    Task<ComparacionCandidatosDto> CompararCandidatosAsync(Guid evaluacionId, List<Guid> candidatoIds, Guid evaluadorId);
 }

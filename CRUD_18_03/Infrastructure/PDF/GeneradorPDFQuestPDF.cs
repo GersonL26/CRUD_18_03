@@ -160,6 +160,77 @@ public class GeneradorPDFQuestPDF : IGeneradorPDF
         });
     }
 
+    public byte[] GenerarReporteRanking(RankingEvaluacionDto ranking)
+    {
+        return Document.Create(contenedor =>
+        {
+            contenedor.Page(pagina =>
+            {
+                pagina.Size(PageSizes.Letter);
+                pagina.Margin(40);
+                pagina.DefaultTextStyle(x => x.FontSize(10));
+
+                pagina.Header().Column(col =>
+                {
+                    col.Item().Text("Ranking de Candidatos").FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
+                    col.Item().PaddingTop(3).Text($"{ranking.Titulo} — {ranking.Tecnologia} ({ranking.Nivel})")
+                        .FontSize(12).FontColor(Colors.Grey.Darken1);
+                    col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+                });
+
+                pagina.Content().PaddingTop(10).Column(col =>
+                {
+                    col.Item().PaddingBottom(10).Row(row =>
+                    {
+                        row.RelativeItem().Text($"Total analizados: {ranking.TotalAnalizados}").FontSize(10);
+                        row.RelativeItem().Text($"Score promedio: {ranking.ScorePromedio?.ToString("F1") ?? "—"}").FontSize(10);
+                        row.RelativeItem().Text($"Máx: {ranking.ScoreMaximo?.ToString("F1") ?? "—"} | Mín: {ranking.ScoreMinimo?.ToString("F1") ?? "—"}").FontSize(10);
+                    });
+
+                    col.Item().Table(tabla =>
+                    {
+                        tabla.ColumnsDefinition(cols =>
+                        {
+                            cols.ConstantColumn(40);
+                            cols.RelativeColumn(3);
+                            cols.RelativeColumn(3);
+                            cols.ConstantColumn(60);
+                            cols.RelativeColumn(2);
+                            cols.RelativeColumn(2);
+                        });
+
+                        tabla.Header(header =>
+                        {
+                            var estiloCabecera = TextStyle.Default.FontSize(9).Bold().FontColor(Colors.White);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("#").Style(estiloCabecera);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Nombre").Style(estiloCabecera);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Email").Style(estiloCabecera);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Score").Style(estiloCabecera);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Recomendación").Style(estiloCabecera);
+                            header.Cell().Background(Colors.Blue.Darken2).Padding(5).Text("Tiempo").Style(estiloCabecera);
+                        });
+
+                        foreach (var item in ranking.Ranking)
+                        {
+                            var bgColor = item.Posicion % 2 == 0 ? Colors.Grey.Lighten4 : Colors.White;
+
+                            tabla.Cell().Background(bgColor).Padding(5).Text(item.Posicion.ToString()).FontSize(9);
+                            tabla.Cell().Background(bgColor).Padding(5).Text(item.Nombre).FontSize(9);
+                            tabla.Cell().Background(bgColor).Padding(5).Text(item.Email).FontSize(9);
+                            tabla.Cell().Background(bgColor).Padding(5)
+                                .Text($"{item.ScoreTotal:F1}").FontSize(9).Bold()
+                                .FontColor(ObtenerColorFondo(item.ScoreTotal));
+                            tabla.Cell().Background(bgColor).Padding(5).Text(item.Recomendacion).FontSize(8);
+                            tabla.Cell().Background(bgColor).Padding(5).Text(item.TiempoInvertido ?? "—").FontSize(9);
+                        }
+                    });
+                });
+
+                pagina.Footer().Element(ConstruirPie);
+            });
+        }).GeneratePdf();
+    }
+
     private static string ObtenerColorFondo(double score) =>
         score >= 70 ? "#2E7D32" : score >= 50 ? "#F57F17" : "#C62828";
 

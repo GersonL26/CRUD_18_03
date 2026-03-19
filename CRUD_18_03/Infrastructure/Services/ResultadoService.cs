@@ -110,6 +110,115 @@ public class ResultadoService : IResultadoService
         };
     }
 
+    public async Task<RankingEvaluacionDto> ObtenerRankingAsync(Guid evaluacionId, Guid evaluadorId)
+    {
+        var evaluacion = await ObtenerEvaluacionConCandidatos(evaluacionId);
+        ValidarPropietario(evaluacion, evaluadorId);
+
+        var analizados = evaluacion.Candidatos
+            .Where(c => c.Resultado is not null)
+            .OrderByDescending(c => c.Resultado!.ScoreTotal)
+            .ToList();
+
+        var ranking = analizados.Select((c, index) => new RankingItemDto
+        {
+            Posicion = index + 1,
+            CandidatoId = c.Id,
+            Nombre = c.Nombre,
+            Email = c.Email,
+            ScoreTotal = c.Resultado!.ScoreTotal,
+            Recomendacion = c.Resultado.Recomendacion,
+            TiempoInvertido = ObtenerTiempoInvertido(c),
+            FechaAnalisis = c.Resultado.GeneradoEn
+        }).ToList();
+
+        var scores = analizados.Select(c => c.Resultado!.ScoreTotal).ToList();
+
+        return new RankingEvaluacionDto
+        {
+            EvaluacionId = evaluacion.Id,
+            Titulo = evaluacion.Titulo,
+            Tecnologia = evaluacion.Tecnologia,
+            Nivel = evaluacion.Nivel.ToString(),
+            TotalAnalizados = analizados.Count,
+            ScorePromedio = scores.Count > 0 ? Math.Round(scores.Average(), 2) : null,
+            ScoreMaximo = scores.Count > 0 ? scores.Max() : null,
+            ScoreMinimo = scores.Count > 0 ? scores.Min() : null,
+            Ranking = ranking
+        };
+    }
+
+    public async Task<ComparacionCandidatosDto> CompararCandidatosAsync(
+        Guid evaluacionId, List<Guid> candidatoIds, Guid evaluadorId)
+    {
+        var evaluacion = await _dbContext.Evaluaciones
+            .Include(e => e.Preguntas.Where(p => p.EstaActivo))
+            .Include(e => e.Candidatos.Where(c => c.EstaActivo && candidatoIds.Contains(c.Id)))
+                .ThenInclude(c => c.Resultado)
+            .Include(e => e.Candidatos.Where(c => c.EstaActivo && candidatoIds.Contains(c.Id)))
+                .ThenInclude(c => c.Respuestas.Where(r => r.EstaActivo))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == evaluacionId && e.EstaActivo)
+            ?? throw new KeyNotFoundException($"Evaluación con ID '{evaluacionId}' no encontrada.");
+
+        ValidarPropietario(evaluacion, evaluadorId);
+
+        var preguntas = evaluacion.Preguntas
+            .Where(p => p.EstaActivo)
+            .OrderBy(p => p.OrdenEnEvaluacion)
+            .ToList();
+
+        var candidatos = evaluacion.Candidatos
+            .Where(c => c.Resultado is not null)
+            .OrderByDescending(c => c.Resultado!.ScoreTotal)
+            .Select(c => MapToCandidatoComparado(c, preguntas))
+            .ToList();
+
+        return new ComparacionCandidatosDto
+        {
+            Tecnologia = evaluacion.Tecnologia,
+            Nivel = evaluacion.Nivel.ToString(),
+            TituloEvaluacion = evaluacion.Titulo,
+            Candidatos = candidatos
+        };
+    }
+
+    private async Task<Evaluacion> ObtenerEvaluacionConCandidatos(Guid evaluacionId)
+    {
+        return await _dbContext.Evaluaciones
+            .Include(e => e.Candidatos.Where(c => c.EstaActivo))
+                .ThenInclude(c => c.Resultado)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == evaluacionId && e.EstaActivo)
+            ?? throw new KeyNotFoundException($"Evaluación con ID '{evaluacionId}' no encontrada.");
+    }
+
+    private static CandidatoComparadoDto MapToCandidatoComparado(Candidato c, List<Pregunta> preguntas)
+    {
+        return new CandidatoComparadoDto
+        {
+            CandidatoId = c.Id,
+            Nombre = c.Nombre,
+            ScoreTotal = c.Resultado!.ScoreTotal,
+            Recomendacion = c.Resultado.Recomendacion,
+            TiempoInvertido = ObtenerTiempoInvertido(c),
+            ResumenIA = c.Resultado.ResumenIA,
+            Fortalezas = SplitLista(c.Resultado.FortalezasDetectadas),
+            Brechas = SplitLista(c.Resultado.BrechasDetectadas),
+            ScoresPorPregunta = preguntas.Select(p =>
+            {
+                var resp = c.Respuestas.FirstOrDefault(r => r.PreguntaId == p.Id);
+                return new ScorePorPreguntaDto
+                {
+                    OrdenEnEvaluacion = p.OrdenEnEvaluacion,
+                    TextoPregunta = p.Texto,
+                    PuntajeMaximo = p.PuntajeMaximo,
+                    ScoreIA = resp?.ScoreIA
+                };
+            }).ToList()
+        };
+    }
+
     private async Task<Candidato> ObtenerCandidatoConDatos(Guid candidatoId)
     {
         return await _dbContext.Candidatos

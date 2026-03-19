@@ -37,6 +37,24 @@ public class ResultadosController : ControllerBase
         return Ok(resumen);
     }
 
+    [HttpGet("evaluacion/{evaluacionId:guid}/ranking")]
+    public async Task<IActionResult> ObtenerRanking(Guid evaluacionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var ranking = await _resultadoService.ObtenerRankingAsync(evaluacionId, evaluadorId);
+        return Ok(ranking);
+    }
+
+    [HttpPost("evaluacion/{evaluacionId:guid}/comparar")]
+    public async Task<IActionResult> CompararCandidatos(
+        Guid evaluacionId, [FromBody] CompararCandidatosRequest request)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var comparacion = await _resultadoService.CompararCandidatosAsync(
+            evaluacionId, request.CandidatoIds, evaluadorId);
+        return Ok(comparacion);
+    }
+
     private Guid ObtenerUsuarioId()
         => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? throw new UnauthorizedAccessException("Token de usuario inválido."));
@@ -60,4 +78,9 @@ public class ResultadoPublicoController : ControllerBase
         var resultado = await _resultadoService.ObtenerResultadoPorTokenAsync(token);
         return Ok(resultado);
     }
+}
+
+public class CompararCandidatosRequest
+{
+    public List<Guid> CandidatoIds { get; set; } = new();
 }
