@@ -3,6 +3,7 @@ using CRUD_18_03.Application.Interfaces;
 using CRUD_18_03.Application.Mapping;
 using CRUD_18_03.Application.Metadata;
 using CRUD_18_03.Infrastructure.AI;
+using CRUD_18_03.Infrastructure.Hubs;
 using CRUD_18_03.Infrastructure.OpenApi;
 using CRUD_18_03.Infrastructure.PDF;
 using CRUD_18_03.Infrastructure.Persistence;
@@ -36,6 +37,8 @@ builder.Services.AddHttpClient<IAnalizadorIA, AnalizadorPowerAutomate>();
 builder.Services.AddScoped<IAnalisisService, AnalisisService>();
 builder.Services.AddScoped<IResultadoService, ResultadoService>();
 builder.Services.AddSingleton<IGeneradorPDF, GeneradorPDFQuestPDF>();
+builder.Services.AddScoped<ISesionEnVivoService, SesionEnVivoService>();
+builder.Services.AddSignalR();
 
 // JWT Authentication
 var jwtKey = builder.Configuration["Jwt:Key"]
@@ -75,6 +78,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<SesionHub>("/hubs/sesion");
 
 QuestPDF.Settings.License = LicenseType.Community;
 
