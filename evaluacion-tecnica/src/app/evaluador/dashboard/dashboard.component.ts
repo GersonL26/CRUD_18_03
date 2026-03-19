@@ -59,15 +59,18 @@ export class DashboardComponent implements OnInit {
   }
 
   nombreNivel(nivel: number): string {
-    return ['Junior', 'Mid', 'Senior'][nivel] ?? '';
+    const map: Record<number, string> = { 0: 'Junior', 1: 'Junior', 2: 'Mid', 3: 'Senior', 4: 'Lead' };
+    return map[nivel] ?? 'Junior';
   }
 
   nombreEstado(estado: number): string {
-    return ['Borrador', 'Activa', 'Cerrada'][estado] ?? '';
+    const map: Record<number, string> = { 1: 'Borrador', 2: 'Activa', 3: 'Cerrada' };
+    return map[estado] ?? '';
   }
 
   colorEstado(estado: number): string {
-    return ['warn', 'primary', ''][estado] ?? '';
+    const map: Record<number, string> = { 1: 'warn', 2: 'primary', 3: '' };
+    return map[estado] ?? '';
   }
 
   verDetalle(id: string): void {

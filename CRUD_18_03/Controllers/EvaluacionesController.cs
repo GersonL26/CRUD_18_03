@@ -79,6 +79,14 @@ public class EvaluacionesController : ControllerBase
         return Ok(new { message = "Evaluación cerrada correctamente." });
     }
 
+    [HttpPost("{id:guid}/reactivar")]
+    public async Task<IActionResult> Reactivar(Guid id)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        await _evaluacionService.ReactivarAsync(id, evaluadorId);
+        return Ok(new { message = "Evaluación reactivada correctamente." });
+    }
+
     // --- Preguntas dentro de evaluación ---
 
     [HttpPost("{evaluacionId:guid}/preguntas")]

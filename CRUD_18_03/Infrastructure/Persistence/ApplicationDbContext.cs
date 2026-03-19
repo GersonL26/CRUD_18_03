@@ -65,6 +65,10 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Email).IsRequired().HasMaxLength(250);
             entity.Property(e => e.Token).IsRequired().HasMaxLength(64);
             entity.HasIndex(e => e.Token).IsUnique();
+            entity.HasOne(e => e.Usuario)
+                  .WithMany()
+                  .HasForeignKey(e => e.UsuarioId)
+                  .OnDelete(DeleteBehavior.Restrict);
             entity.HasMany(e => e.Respuestas)
                   .WithOne(r => r.Candidato)
                   .HasForeignKey(r => r.CandidatoId)

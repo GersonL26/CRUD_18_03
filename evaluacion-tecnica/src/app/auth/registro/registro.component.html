@@ -25,7 +25,7 @@
       </div>
 
       <h2 class="text-2xl font-bold text-gray-900">Crear Cuenta</h2>
-      <p class="text-gray-500 text-sm mt-1 mb-8">Regístrate como evaluador para comenzar</p>
+      <p class="text-gray-500 text-sm mt-1 mb-8">Regístrate para comenzar</p>
 
       <form [formGroup]="form" (ngSubmit)="registrar()" class="flex flex-col gap-1">
         <mat-form-field appearance="outline" class="w-full">
@@ -50,6 +50,15 @@
           @if (form.controls.email.hasError('email') && form.controls.email.touched) {
             <mat-error>Ingresa un email válido</mat-error>
           }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="rol">
+            @for (r of roles; track r.value) {
+              <mat-option [value]="r.value">{{ r.label }}</mat-option>
+            }
+          </mat-select>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">

@@ -6,13 +6,32 @@ export interface CandidatoDto {
   fechaInicioRespuesta?: string;
   fechaFinRespuesta?: string;
   evaluacionId: string;
+  usuarioId?: string;
   creadoEn: string;
   estaActivo: boolean;
 }
 
-export interface InvitarCandidatoDto {
-  nombre: string;
+export interface AsignarCandidatoDto {
+  usuarioId: string;
+}
+
+export interface UsuarioResumenDto {
+  id: string;
+  nombreCompleto: string;
   email: string;
+}
+
+export interface EvaluacionAsignadaDto {
+  evaluacionId: string;
+  titulo: string;
+  tecnologia: string;
+  nivel: number;
+  tiempoLimiteTotalMinutos: number;
+  totalPreguntas: number;
+  token: string;
+  fechaInicioRespuesta?: string;
+  fechaFinRespuesta?: string;
+  creadoEn: string;
 }
 
 export interface EvaluacionCandidatoDto {

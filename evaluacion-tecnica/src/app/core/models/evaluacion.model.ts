@@ -69,19 +69,20 @@ export interface ActualizarPreguntaDto {
 }
 
 export enum NivelTecnico {
-  Junior = 0,
-  Mid = 1,
-  Senior = 2
+  Junior = 1,
+  Mid = 2,
+  Senior = 3,
+  Lead = 4
 }
 
 export enum EstadoEvaluacion {
-  Borrador = 0,
-  Activa = 1,
-  Cerrada = 2
+  Borrador = 1,
+  Activa = 2,
+  Cerrada = 3
 }
 
 export enum TipoPregunta {
-  Abierta = 0,
-  OpcionMultiple = 1,
-  Codigo = 2
+  TextoLibre = 1,
+  Codigo = 2,
+  OpcionMultiple = 3
 }

@@ -47,6 +47,10 @@ export class EvaluacionService {
     return this.http.post<{ message: string }>(`${this.url}/${id}/cerrar`, {});
   }
 
+  reactivar(id: string) {
+    return this.http.post<{ message: string }>(`${this.url}/${id}/reactivar`, {});
+  }
+
   agregarPregunta(evaluacionId: string, dto: AgregarPreguntaDto) {
     return this.http.post<PreguntaDto>(`${this.url}/${evaluacionId}/preguntas`, dto);
   }

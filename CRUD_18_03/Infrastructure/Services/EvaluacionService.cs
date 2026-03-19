@@ -144,6 +144,26 @@ public class EvaluacionService : IEvaluacionService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task ReactivarAsync(Guid id, Guid evaluadorId)
+    {
+        var evaluacion = await _dbContext.Evaluaciones
+            .Include(e => e.Preguntas.Where(p => p.EstaActivo))
+            .FirstOrDefaultAsync(e => e.Id == id && e.EstaActivo)
+            ?? throw new KeyNotFoundException($"Evaluación con ID '{id}' no encontrada.");
+
+        ValidarPropietario(evaluacion, evaluadorId);
+
+        if (evaluacion.Estado != EstadoEvaluacion.Cerrada)
+            throw new InvalidOperationException("Solo se pueden reactivar evaluaciones en estado Cerrada.");
+
+        if (evaluacion.Preguntas.Count == 0)
+            throw new InvalidOperationException("No se puede reactivar una evaluación sin preguntas.");
+
+        evaluacion.Estado = EstadoEvaluacion.Activa;
+        evaluacion.ModificadoEn = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+    }
+
     public async Task<PreguntaDto> AgregarPreguntaAsync(Guid evaluacionId, AgregarPreguntaDto dto, Guid evaluadorId)
     {
         var evaluacion = await _dbContext.Evaluaciones

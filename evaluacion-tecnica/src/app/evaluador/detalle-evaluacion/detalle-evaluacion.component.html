@@ -12,7 +12,7 @@
             {{ nombreEstado(ev.estado) }}
           </span>
         </div>
-        <p class="text-sm text-gray-500 mt-1">{{ ev.tecnologia }} · {{ niveles[ev.nivel].label }} · {{ ev.tiempoLimiteTotalMinutos }} min</p>
+        <p class="text-sm text-gray-500 mt-1">{{ ev.tecnologia }} · {{ nombreNivel(ev.nivel) }} · {{ ev.tiempoLimiteTotalMinutos }} min</p>
       </div>
       <div class="flex gap-2">
         @if (esBorrador()) {
@@ -25,6 +25,12 @@
           <button mat-stroked-button (click)="cerrar()">
             <mat-icon>stop</mat-icon>
             Cerrar
+          </button>
+        }
+        @if (esCerrada()) {
+          <button mat-stroked-button color="primary" (click)="reactivar()">
+            <mat-icon>replay</mat-icon>
+            Reactivar
           </button>
         }
         @if (esBorrador()) {
@@ -80,13 +86,15 @@
 
                 @if (esBorrador()) {
                   <div class="flex justify-end mt-2">
-                    <button mat-flat-button color="primary" type="submit" [disabled]="infoForm.invalid || guardandoInfo()">
-                      @if (guardandoInfo()) {
+                    @if (guardandoInfo()) {
+                      <button mat-flat-button color="primary" disabled>
                         <mat-spinner diameter="20"></mat-spinner>
-                      } @else {
+                      </button>
+                    } @else {
+                      <button mat-flat-button color="primary" type="submit" [disabled]="infoForm.invalid">
                         Guardar Cambios
-                      }
-                    </button>
+                      </button>
+                    }
                   </div>
                 }
               </form>
@@ -99,10 +107,10 @@
         <div class="mt-6 space-y-4">
           @if (esBorrador()) {
             <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
-              <mat-card-header class="px-6 pt-5 pb-3">
+              <mat-card-header class="px-6 pt-5 pb-4">
                 <mat-card-title class="text-base font-semibold text-gray-900">Agregar Pregunta</mat-card-title>
               </mat-card-header>
-              <mat-card-content class="px-6 pb-5">
+              <mat-card-content class="px-6 pb-5 pt-1">
                 <form [formGroup]="preguntaForm" (ngSubmit)="agregarPregunta()" class="flex flex-col gap-4">
                   <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Texto de la pregunta</mat-label>
@@ -129,14 +137,16 @@
                   </div>
 
                   <div class="flex justify-end">
-                    <button mat-flat-button color="primary" type="submit" [disabled]="preguntaForm.invalid || agregandoPregunta()">
-                      @if (agregandoPregunta()) {
+                    @if (agregandoPregunta()) {
+                      <button mat-flat-button color="primary" disabled>
                         <mat-spinner diameter="20"></mat-spinner>
-                      } @else {
+                      </button>
+                    } @else {
+                      <button mat-flat-button color="primary" type="submit" [disabled]="preguntaForm.invalid">
                         <mat-icon>add</mat-icon>
                         Agregar
-                      }
-                    </button>
+                      </button>
+                    }
                   </div>
                 </form>
               </mat-card-content>
@@ -194,29 +204,29 @@
           @if (esActiva()) {
             <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
               <mat-card-header class="px-6 pt-5 pb-3">
-                <mat-card-title class="text-base font-semibold text-gray-900">Invitar Candidato</mat-card-title>
+                <mat-card-title class="text-base font-semibold text-gray-900">Asignar Candidato</mat-card-title>
               </mat-card-header>
               <mat-card-content class="px-6 pb-5">
-                <form [formGroup]="candidatoForm" (ngSubmit)="invitarCandidato()" class="space-y-4">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <mat-form-field appearance="outline" class="w-full">
-                      <mat-label>Nombre</mat-label>
-                      <input matInput formControlName="nombre">
-                    </mat-form-field>
-                    <mat-form-field appearance="outline" class="w-full">
-                      <mat-label>Email</mat-label>
-                      <input matInput formControlName="email" type="email">
-                    </mat-form-field>
-                  </div>
-                  <div class="flex justify-end">
-                    <button mat-flat-button color="primary" type="submit" [disabled]="candidatoForm.invalid || invitando()">
-                      @if (invitando()) {
-                        <mat-spinner diameter="20"></mat-spinner>
-                      } @else {
-                        <mat-icon>person_add</mat-icon>
-                        Invitar Candidato
+                <form [formGroup]="asignarForm" (ngSubmit)="asignarCandidato()" class="space-y-4">
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Seleccionar usuario</mat-label>
+                    <mat-select formControlName="usuarioId">
+                      @for (u of usuariosCandidatos(); track u.id) {
+                        <mat-option [value]="u.id">{{ u.nombreCompleto }} — {{ u.email }}</mat-option>
                       }
-                    </button>
+                    </mat-select>
+                  </mat-form-field>
+                  <div class="flex justify-end">
+                    @if (asignando()) {
+                      <button mat-flat-button color="primary" disabled>
+                        <mat-spinner diameter="20"></mat-spinner>
+                      </button>
+                    } @else {
+                      <button mat-flat-button color="primary" type="submit" [disabled]="asignarForm.invalid">
+                        <mat-icon>person_add</mat-icon>
+                        Asignar Candidato
+                      </button>
+                    }
                   </div>
                 </form>
               </mat-card-content>
@@ -227,7 +237,7 @@
             <div class="flex flex-col items-center py-12 text-gray-400">
               <mat-icon class="!text-5xl !w-12 !h-12 mb-3">people</mat-icon>
               <p class="text-base font-medium">Sin candidatos</p>
-              <p class="text-sm mt-1">Activa la evaluación para invitar candidatos</p>
+              <p class="text-sm mt-1">Activa la evaluación para asignar candidatos</p>
             </div>
           } @else {
             <mat-card class="!rounded-xl !shadow-sm border border-gray-100 !p-0">
@@ -244,18 +254,31 @@
                   <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Estado</th>
                   <td mat-cell *matCellDef="let c">
                     @if (c.fechaFinRespuesta) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Completado</span>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                        <mat-icon class="!text-sm !w-3.5 !h-3.5">check_circle</mat-icon>
+                        Completado
+                      </span>
                     } @else if (c.fechaInicioRespuesta) {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">En progreso</span>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                        <mat-icon class="!text-sm !w-3.5 !h-3.5">pending</mat-icon>
+                        En progreso
+                      </span>
                     } @else {
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Pendiente</span>
+                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        <mat-icon class="!text-sm !w-3.5 !h-3.5">schedule</mat-icon>
+                        Asignado
+                      </span>
                     }
                   </td>
+                </ng-container>
+                <ng-container matColumnDef="fecha">
+                  <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Asignado</th>
+                  <td mat-cell *matCellDef="let c" class="!text-gray-500 text-sm">{{ c.creadoEn | date:'dd/MM/yy HH:mm' }}</td>
                 </ng-container>
                 <ng-container matColumnDef="acciones">
                   <th mat-header-cell *matHeaderCellDef class="!w-16"></th>
                   <td mat-cell *matCellDef="let c">
-                    <button mat-icon-button matTooltip="Eliminar" (click)="eliminarCandidato(c.id)" class="!text-red-400">
+                    <button mat-icon-button matTooltip="Eliminar" (click)="eliminarCandidato(c.id)" class="!text-red-400" [disabled]="!!c.fechaFinRespuesta">
                       <mat-icon>delete</mat-icon>
                     </button>
                   </td>

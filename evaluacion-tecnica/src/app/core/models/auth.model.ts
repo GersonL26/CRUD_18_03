@@ -1,3 +1,9 @@
+export enum RolUsuario {
+  Admin = 1,
+  Evaluador = 2,
+  Candidato = 3
+}
+
 export interface LoginDto {
   email: string;
   password: string;

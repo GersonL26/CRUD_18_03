@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,18 +12,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EvaluacionService } from '../../core/services/evaluacion/evaluacion.service';
 import { CandidatoService } from '../../core/services/candidato/candidato.service';
-import { EvaluacionConPreguntasDto, PreguntaDto, EstadoEvaluacion } from '../../core/models/evaluacion.model';
-import { CandidatoDto } from '../../core/models/candidato.model';
+import { EvaluacionConPreguntasDto, PreguntaDto, EstadoEvaluacion, NivelTecnico, TipoPregunta } from '../../core/models/evaluacion.model';
+import { CandidatoDto, UsuarioResumenDto } from '../../core/models/candidato.model';
 
 @Component({
   selector: 'app-detalle-evaluacion',
   imports: [
     ReactiveFormsModule,
+    DatePipe,
     MatTabsModule,
     MatCardModule,
     MatFormFieldModule,
@@ -42,32 +44,35 @@ import { CandidatoDto } from '../../core/models/candidato.model';
 export class DetalleEvaluacionComponent implements OnInit {
   evaluacion = signal<EvaluacionConPreguntasDto | null>(null);
   candidatos = signal<CandidatoDto[]>([]);
+  usuariosCandidatos = signal<UsuarioResumenDto[]>([]);
   cargando = signal(true);
   guardandoInfo = signal(false);
   agregandoPregunta = signal(false);
-  invitando = signal(false);
+  asignando = signal(false);
 
   esBorrador = () => this.evaluacion()?.estado === EstadoEvaluacion.Borrador;
   esActiva = () => this.evaluacion()?.estado === EstadoEvaluacion.Activa;
+  esCerrada = () => this.evaluacion()?.estado === EstadoEvaluacion.Cerrada;
 
   columnasPreguntas = ['orden', 'texto', 'tipo', 'puntaje', 'tiempo', 'acciones'];
-  columnasCandidatos = ['nombre', 'email', 'estado', 'acciones'];
+  columnasCandidatos = ['nombre', 'email', 'estado', 'fecha', 'acciones'];
 
   niveles = [
-    { value: 0, label: 'Junior' },
-    { value: 1, label: 'Mid' },
-    { value: 2, label: 'Senior' }
+    { value: NivelTecnico.Junior, label: 'Junior' },
+    { value: NivelTecnico.Mid, label: 'Mid' },
+    { value: NivelTecnico.Senior, label: 'Senior' },
+    { value: NivelTecnico.Lead, label: 'Lead' }
   ];
 
   tiposPregunta = [
-    { value: 0, label: 'Abierta' },
-    { value: 1, label: 'Opción Múltiple' },
-    { value: 2, label: 'Código' }
+    { value: TipoPregunta.TextoLibre, label: 'Texto Libre' },
+    { value: TipoPregunta.Codigo, label: 'Código' },
+    { value: TipoPregunta.OpcionMultiple, label: 'Opción Múltiple' }
   ];
 
   infoForm;
   preguntaForm;
-  candidatoForm;
+  asignarForm;
 
   private evaluacionId = '';
 
@@ -83,7 +88,7 @@ export class DetalleEvaluacionComponent implements OnInit {
       titulo: ['', [Validators.required, Validators.maxLength(200)]],
       descripcion: ['', [Validators.maxLength(1000)]],
       tecnologia: ['', [Validators.required, Validators.maxLength(100)]],
-      nivel: [0],
+      nivel: [NivelTecnico.Junior],
       tiempoLimiteTotalMinutos: [60, [Validators.min(10), Validators.max(300)]],
       requiereCamara: [false],
       requiereMicrofono: [false]
@@ -91,14 +96,13 @@ export class DetalleEvaluacionComponent implements OnInit {
 
     this.preguntaForm = this.fb.group({
       texto: ['', [Validators.required, Validators.maxLength(2000)]],
-      tipo: [0, [Validators.required]],
+      tipo: [TipoPregunta.TextoLibre, [Validators.required]],
       puntajeMaximo: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       tiempoLimiteSegundos: [300, [Validators.required, Validators.min(30), Validators.max(3600)]]
     });
 
-    this.candidatoForm = this.fb.group({
-      nombre: ['', [Validators.required]],
-      email: ['', [Validators.required, Validators.email]]
+    this.asignarForm = this.fb.group({
+      usuarioId: ['', [Validators.required]]
     });
   }
 
@@ -127,18 +131,28 @@ export class DetalleEvaluacionComponent implements OnInit {
     this.candidatoService.listar(this.evaluacionId).subscribe({
       next: data => this.candidatos.set(data)
     });
+
+    this.candidatoService.listarUsuariosCandidatos(this.evaluacionId).subscribe({
+      next: data => this.usuariosCandidatos.set(data)
+    });
+  }
+
+  nombreNivel(nivel: number): string {
+    return this.niveles.find(n => n.value === nivel)?.label ?? 'Junior';
   }
 
   nombreEstado(estado: number): string {
-    return ['Borrador', 'Activa', 'Cerrada'][estado] ?? '';
+    const map: Record<number, string> = { 1: 'Borrador', 2: 'Activa', 3: 'Cerrada' };
+    return map[estado] ?? '';
   }
 
   claseEstado(estado: number): string {
-    return [
-      'bg-amber-50 text-amber-700',
-      'bg-green-50 text-green-700',
-      'bg-gray-100 text-gray-600'
-    ][estado] ?? '';
+    const map: Record<number, string> = {
+      1: 'bg-amber-50 text-amber-700',
+      2: 'bg-green-50 text-green-700',
+      3: 'bg-gray-100 text-gray-600'
+    };
+    return map[estado] ?? '';
   }
 
   nombreTipo(tipo: number): string {
@@ -179,7 +193,7 @@ export class DetalleEvaluacionComponent implements OnInit {
       tiempoLimiteSegundos: pv.tiempoLimiteSegundos!
     }).subscribe({
       next: () => {
-        this.preguntaForm.reset({ tipo: 0, puntajeMaximo: 10, tiempoLimiteSegundos: 300 });
+        this.preguntaForm.reset({ tipo: TipoPregunta.TextoLibre, puntajeMaximo: 10, tiempoLimiteSegundos: 300 });
         this.agregandoPregunta.set(false);
         this.cargar();
       },
@@ -193,30 +207,29 @@ export class DetalleEvaluacionComponent implements OnInit {
     });
   }
 
-  invitarCandidato(): void {
-    if (this.candidatoForm.invalid) return;
-    this.invitando.set(true);
+  asignarCandidato(): void {
+    if (this.asignarForm.invalid) return;
+    this.asignando.set(true);
 
-    const cv = this.candidatoForm.getRawValue();
-    this.candidatoService.invitar(this.evaluacionId, {
-      nombre: cv.nombre!,
-      email: cv.email!
-    }).subscribe({
+    const usuarioId = this.asignarForm.getRawValue().usuarioId!;
+    this.candidatoService.asignar(this.evaluacionId, { usuarioId }).subscribe({
       next: () => {
-        this.snackBar.open('Candidato invitado', 'OK', { duration: 2000 });
-        this.candidatoForm.reset();
-        this.invitando.set(false);
+        this.snackBar.open('Candidato asignado correctamente', 'OK', { duration: 3000 });
+        this.asignarForm.reset();
+        this.asignando.set(false);
         this.candidatoService.listar(this.evaluacionId).subscribe({
           next: data => this.candidatos.set(data)
         });
       },
-      error: () => this.invitando.set(false)
+      error: () => this.asignando.set(false)
     });
   }
 
   eliminarCandidato(candidatoId: string): void {
+    if (!confirm('¿Eliminar este candidato? Esta acción no se puede deshacer.')) return;
     this.candidatoService.eliminar(this.evaluacionId, candidatoId).subscribe({
       next: () => {
+        this.snackBar.open('Candidato eliminado', 'OK', { duration: 2000 });
         this.candidatoService.listar(this.evaluacionId).subscribe({
           next: data => this.candidatos.set(data)
         });
@@ -237,6 +250,15 @@ export class DetalleEvaluacionComponent implements OnInit {
     this.evaluacionService.cerrar(this.evaluacionId).subscribe({
       next: () => {
         this.snackBar.open('Evaluación cerrada', 'OK', { duration: 2000 });
+        this.cargar();
+      }
+    });
+  }
+
+  reactivar(): void {
+    this.evaluacionService.reactivar(this.evaluacionId).subscribe({
+      next: () => {
+        this.snackBar.open('Evaluación reactivada', 'OK', { duration: 2000 });
         this.cargar();
       }
     });

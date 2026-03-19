@@ -8,8 +8,10 @@ public class Candidato : BaseEntity
     public DateTime? FechaInicioRespuesta { get; set; }
     public DateTime? FechaFinRespuesta { get; set; }
     public Guid EvaluacionId { get; set; }
+    public Guid? UsuarioId { get; set; }
 
     public Evaluacion? Evaluacion { get; set; }
+    public Usuario? Usuario { get; set; }
     public List<Respuesta> Respuestas { get; set; } = new();
     public ResultadoEvaluacion? Resultado { get; set; }
 }

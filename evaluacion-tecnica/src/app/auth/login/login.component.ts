@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { RolUsuario } from '../../core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -49,8 +50,12 @@ export class LoginComponent {
     const { email, password } = this.form.getRawValue();
 
     this.authService.login({ email: email!, password: password! }).subscribe({
-      next: () => {
-        this.router.navigate(['/evaluador/dashboard']);
+      next: (res) => {
+        if (res.rol === RolUsuario.Candidato) {
+          this.router.navigate(['/panel-candidato/mis-evaluaciones']);
+        } else {
+          this.router.navigate(['/evaluador/dashboard']);
+        }
       },
       error: () => {
         this.cargando.set(false);

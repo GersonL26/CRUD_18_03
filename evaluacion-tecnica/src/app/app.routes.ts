@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { evaluadorGuard } from './core/guards/evaluador.guard';
+import { candidatoGuard } from './core/guards/candidato.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -16,6 +17,11 @@ export const routes: Routes = [
     path: 'evaluador',
     canActivate: [authGuard, evaluadorGuard],
     loadChildren: () => import('./evaluador/evaluador.routes').then(m => m.EVALUADOR_ROUTES)
+  },
+  {
+    path: 'panel-candidato',
+    canActivate: [authGuard, candidatoGuard],
+    loadChildren: () => import('./candidato/candidato-dashboard.routes').then(m => m.CANDIDATO_DASHBOARD_ROUTES)
   },
   {
     path: 'candidato/:token',

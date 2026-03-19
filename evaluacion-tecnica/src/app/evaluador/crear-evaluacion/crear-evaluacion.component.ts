@@ -12,7 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { EvaluacionService } from '../../core/services/evaluacion/evaluacion.service';
-import { TipoPregunta } from '../../core/models/evaluacion.model';
+import { TipoPregunta, NivelTecnico } from '../../core/models/evaluacion.model';
 
 @Component({
   selector: 'app-crear-evaluacion',
@@ -35,15 +35,16 @@ export class CrearEvaluacionComponent {
   guardando = signal(false);
 
   niveles = [
-    { value: 0, label: 'Junior' },
-    { value: 1, label: 'Mid' },
-    { value: 2, label: 'Senior' }
+    { value: NivelTecnico.Junior, label: 'Junior' },
+    { value: NivelTecnico.Mid, label: 'Mid' },
+    { value: NivelTecnico.Senior, label: 'Senior' },
+    { value: NivelTecnico.Lead, label: 'Lead' }
   ];
 
   tiposPregunta = [
-    { value: 0, label: 'Abierta' },
-    { value: 1, label: 'Opción Múltiple' },
-    { value: 2, label: 'Código' }
+    { value: TipoPregunta.TextoLibre, label: 'Texto Libre' },
+    { value: TipoPregunta.Codigo, label: 'Código' },
+    { value: TipoPregunta.OpcionMultiple, label: 'Opción Múltiple' }
   ];
 
   datosForm;
@@ -59,7 +60,7 @@ export class CrearEvaluacionComponent {
       titulo: ['', [Validators.required, Validators.maxLength(200)]],
       descripcion: ['', [Validators.maxLength(1000)]],
       tecnologia: ['', [Validators.required, Validators.maxLength(100)]],
-      nivel: [0, [Validators.required]],
+      nivel: [NivelTecnico.Junior, [Validators.required]],
       tiempoLimiteTotalMinutos: [60, [Validators.required, Validators.min(10), Validators.max(300)]],
       requiereCamara: [false],
       requiereMicrofono: [false]
@@ -78,7 +79,7 @@ export class CrearEvaluacionComponent {
     if (this.preguntas.length >= 30) return;
     this.preguntas.push(this.fb.group({
       texto: ['', [Validators.required, Validators.maxLength(2000)]],
-      tipo: [0, [Validators.required]],
+      tipo: [TipoPregunta.TextoLibre, [Validators.required]],
       puntajeMaximo: [10, [Validators.required, Validators.min(1), Validators.max(100)]],
       tiempoLimiteSegundos: [300, [Validators.required, Validators.min(30), Validators.max(3600)]]
     }));
@@ -90,6 +91,10 @@ export class CrearEvaluacionComponent {
 
   nombreTipo(tipo: number): string {
     return this.tiposPregunta.find(t => t.value === tipo)?.label ?? '';
+  }
+
+  nombreNivel(nivel: number | null | undefined): string {
+    return this.niveles.find(n => n.value === nivel)?.label ?? '';
   }
 
   guardar(): void {

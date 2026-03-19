@@ -1,8 +1,12 @@
 using System.Security.Claims;
+using CRUD_18_03.Application.DTOs.Auth;
 using CRUD_18_03.Application.DTOs.Candidato;
 using CRUD_18_03.Application.Interfaces;
+using CRUD_18_03.Domain.Enums;
+using CRUD_18_03.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRUD_18_03.Controllers;
 
@@ -12,17 +16,19 @@ namespace CRUD_18_03.Controllers;
 public class CandidatosController : ControllerBase
 {
     private readonly ICandidatoService _candidatoService;
+    private readonly ApplicationDbContext _dbContext;
 
-    public CandidatosController(ICandidatoService candidatoService)
+    public CandidatosController(ICandidatoService candidatoService, ApplicationDbContext dbContext)
     {
         _candidatoService = candidatoService;
+        _dbContext = dbContext;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Invitar(Guid evaluacionId, [FromBody] InvitarCandidatoDto dto)
+    public async Task<IActionResult> Asignar(Guid evaluacionId, [FromBody] AsignarCandidatoDto dto)
     {
         var evaluadorId = ObtenerUsuarioId();
-        var candidato = await _candidatoService.InvitarAsync(evaluacionId, dto, evaluadorId);
+        var candidato = await _candidatoService.AsignarAsync(evaluacionId, dto, evaluadorId);
         return StatusCode(201, candidato);
     }
 
@@ -42,14 +48,51 @@ public class CandidatosController : ControllerBase
         return Ok(new { message = "Candidato eliminado correctamente." });
     }
 
+    [HttpGet("usuarios-candidatos")]
+    public async Task<IActionResult> ListarUsuariosCandidatos()
+    {
+        var usuarios = await _dbContext.Usuarios
+            .Where(u => u.Rol == RolUsuario.Candidato && u.EstaActivo)
+            .AsNoTracking()
+            .OrderBy(u => u.NombreCompleto)
+            .Select(u => new UsuarioResumenDto
+            {
+                Id = u.Id,
+                NombreCompleto = u.NombreCompleto,
+                Email = u.Email
+            })
+            .ToListAsync();
+
+        return Ok(usuarios);
+    }
+
     private Guid ObtenerUsuarioId()
         => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? throw new UnauthorizedAccessException("Token de usuario inválido."));
 }
 
-/// <summary>
-/// Controlador público para candidatos (acceso con token, sin JWT).
-/// </summary>
+[ApiController]
+[Route("api/mis-evaluaciones")]
+[Authorize(Roles = "Candidato")]
+public class MisEvaluacionesController : ControllerBase
+{
+    private readonly ICandidatoService _candidatoService;
+
+    public MisEvaluacionesController(ICandidatoService candidatoService)
+    {
+        _candidatoService = candidatoService;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Listar()
+    {
+        var usuarioId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedAccessException("Token inválido."));
+        var evaluaciones = await _candidatoService.ListarEvaluacionesPorUsuarioAsync(usuarioId);
+        return Ok(evaluaciones);
+    }
+}
+
 [ApiController]
 [Route("api/prueba")]
 [AllowAnonymous]

@@ -154,7 +154,7 @@
               <span class="text-gray-500">Tecnología</span>
               <span class="font-medium text-gray-900">{{ datosForm.value.tecnologia }}</span>
               <span class="text-gray-500">Nivel</span>
-              <span class="font-medium text-gray-900">{{ niveles[datosForm.value.nivel ?? 0].label }}</span>
+              <span class="font-medium text-gray-900">{{ nombreNivel(datosForm.value.nivel) }}</span>
               <span class="text-gray-500">Tiempo límite</span>
               <span class="font-medium text-gray-900">{{ datosForm.value.tiempoLimiteTotalMinutos }} min</span>
             </div>
@@ -195,14 +195,16 @@
             <mat-icon>arrow_back</mat-icon>
             Anterior
           </button>
-          <button mat-flat-button color="primary" (click)="guardar()" [disabled]="datosForm.invalid || guardando()" class="h-11 px-6 rounded-lg">
-            @if (guardando()) {
+          @if (guardando()) {
+            <button mat-flat-button color="primary" disabled class="h-11 px-6 rounded-lg">
               <mat-spinner diameter="22" class="inline-block"></mat-spinner>
-            } @else {
+            </button>
+          } @else {
+            <button mat-flat-button color="primary" (click)="guardar()" [disabled]="datosForm.invalid" class="h-11 px-6 rounded-lg">
               <mat-icon>save</mat-icon>
               Guardar Evaluación
-            }
-          </button>
+            </button>
+          }
         </div>
       </div>
     </mat-step>

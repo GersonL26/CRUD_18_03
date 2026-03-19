@@ -18,7 +18,7 @@ public class CandidatoService : ICandidatoService
 
     // --- Evaluador: gestión de candidatos ---
 
-    public async Task<CandidatoDto> InvitarAsync(Guid evaluacionId, InvitarCandidatoDto dto, Guid evaluadorId)
+    public async Task<CandidatoDto> AsignarAsync(Guid evaluacionId, AsignarCandidatoDto dto, Guid evaluadorId)
     {
         var evaluacion = await _dbContext.Evaluaciones
             .FirstOrDefaultAsync(e => e.Id == evaluacionId && e.EstaActivo)
@@ -28,19 +28,24 @@ public class CandidatoService : ICandidatoService
             throw new UnauthorizedAccessException("No tiene permiso para acceder a esta evaluación.");
 
         if (evaluacion.Estado != EstadoEvaluacion.Activa)
-            throw new InvalidOperationException("Solo se pueden invitar candidatos a evaluaciones en estado Activa.");
+            throw new InvalidOperationException("Solo se pueden asignar candidatos a evaluaciones en estado Activa.");
 
-        var emailDuplicado = await _dbContext.Candidatos
-            .AnyAsync(c => c.EvaluacionId == evaluacionId && c.Email == dto.Email && c.EstaActivo);
+        var usuario = await _dbContext.Usuarios
+            .FirstOrDefaultAsync(u => u.Id == dto.UsuarioId && u.EstaActivo && u.Rol == RolUsuario.Candidato)
+            ?? throw new KeyNotFoundException("Usuario candidato no encontrado.");
 
-        if (emailDuplicado)
-            throw new InvalidOperationException($"Ya existe un candidato con el email '{dto.Email}' en esta evaluación.");
+        var yaAsignado = await _dbContext.Candidatos
+            .AnyAsync(c => c.EvaluacionId == evaluacionId && c.UsuarioId == dto.UsuarioId && c.EstaActivo);
+
+        if (yaAsignado)
+            throw new InvalidOperationException($"El usuario '{usuario.NombreCompleto}' ya está asignado a esta evaluación.");
 
         var candidato = new Candidato
         {
-            Nombre = dto.Nombre,
-            Email = dto.Email,
-            EvaluacionId = evaluacionId
+            Nombre = usuario.NombreCompleto,
+            Email = usuario.Email,
+            EvaluacionId = evaluacionId,
+            UsuarioId = usuario.Id
         };
 
         _dbContext.Candidatos.Add(candidato);
@@ -210,7 +215,33 @@ public class CandidatoService : ICandidatoService
         FechaInicioRespuesta = c.FechaInicioRespuesta,
         FechaFinRespuesta = c.FechaFinRespuesta,
         EvaluacionId = c.EvaluacionId,
+        UsuarioId = c.UsuarioId,
         CreadoEn = c.CreadoEn,
         EstaActivo = c.EstaActivo
     };
+
+    public async Task<IEnumerable<EvaluacionAsignadaDto>> ListarEvaluacionesPorUsuarioAsync(Guid usuarioId)
+    {
+        var candidatos = await _dbContext.Candidatos
+            .Include(c => c.Evaluacion!)
+                .ThenInclude(e => e.Preguntas.Where(p => p.EstaActivo))
+            .Where(c => c.UsuarioId == usuarioId && c.EstaActivo && c.Evaluacion!.EstaActivo)
+            .AsNoTracking()
+            .OrderByDescending(c => c.CreadoEn)
+            .ToListAsync();
+
+        return candidatos.Select(c => new EvaluacionAsignadaDto
+        {
+            EvaluacionId = c.EvaluacionId,
+            Titulo = c.Evaluacion!.Titulo,
+            Tecnologia = c.Evaluacion.Tecnologia,
+            Nivel = c.Evaluacion.Nivel,
+            TiempoLimiteTotalMinutos = c.Evaluacion.TiempoLimiteTotalMinutos,
+            TotalPreguntas = c.Evaluacion.Preguntas.Count(p => p.EstaActivo),
+            Token = c.Token,
+            FechaInicioRespuesta = c.FechaInicioRespuesta,
+            FechaFinRespuesta = c.FechaFinRespuesta,
+            CreadoEn = c.CreadoEn
+        });
+    }
 }
