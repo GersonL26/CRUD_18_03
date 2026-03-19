@@ -1,0 +1,90 @@
+<div class="min-h-screen flex">
+  <div class="hidden lg:flex lg:w-1/2 items-center justify-center bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-20 left-20 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+      <div class="absolute bottom-20 right-20 w-96 h-96 bg-blue-300 rounded-full blur-3xl"></div>
+    </div>
+    <div class="relative z-10 px-16 text-white max-w-lg">
+      <div class="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-6">
+        <mat-icon class="text-white !text-3xl !w-8 !h-8">psychology</mat-icon>
+      </div>
+      <h1 class="text-4xl font-bold leading-tight mb-4">EvalTech IA</h1>
+      <p class="text-blue-100 text-lg leading-relaxed max-w-md">
+        Plataforma inteligente para evaluar talento técnico de forma objetiva, rápida y asistida por IA.
+      </p>
+      <div class="mt-10 flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <mat-icon class="text-blue-200 !w-6 !h-6">check_circle</mat-icon>
+          <span class="text-blue-100">Evaluaciones personalizadas con IA</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <mat-icon class="text-blue-200 !w-6 !h-6">check_circle</mat-icon>
+          <span class="text-blue-100">Resultados y análisis en tiempo real</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <mat-icon class="text-blue-200 !w-6 !h-6">check_circle</mat-icon>
+          <span class="text-blue-100">Ranking y comparación de candidatos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full lg:w-1/2 flex items-center justify-center bg-gray-50 px-8">
+    <div class="w-full max-w-sm">
+      <div class="lg:hidden flex items-center justify-center gap-2 mb-10">
+        <div class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center">
+          <mat-icon class="text-white !text-xl !w-5 !h-5">psychology</mat-icon>
+        </div>
+        <span class="text-xl font-bold text-gray-900">EvalTech IA</span>
+      </div>
+
+      <h2 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h2>
+      <p class="text-gray-500 text-sm mt-1 mb-8">Ingresa tus credenciales para continuar</p>
+
+      <form [formGroup]="form" (ngSubmit)="login()" class="flex flex-col gap-1">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="email" type="email" placeholder="tu@email.com">
+          <mat-icon matSuffix class="text-gray-400">email</mat-icon>
+          @if (form.controls.email.hasError('required') && form.controls.email.touched) {
+            <mat-error>El email es requerido</mat-error>
+          }
+          @if (form.controls.email.hasError('email') && form.controls.email.touched) {
+            <mat-error>Ingresa un email válido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Contraseña</mat-label>
+          <input matInput formControlName="password"
+            [type]="ocultarPassword() ? 'password' : 'text'"
+            placeholder="••••••">
+          <button mat-icon-button matSuffix type="button" (click)="togglePassword()">
+            <mat-icon class="text-gray-400">{{ ocultarPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+          </button>
+          @if (form.controls.password.hasError('required') && form.controls.password.touched) {
+            <mat-error>La contraseña es requerida</mat-error>
+          }
+          @if (form.controls.password.hasError('minlength') && form.controls.password.touched) {
+            <mat-error>Mínimo 6 caracteres</mat-error>
+          }
+        </mat-form-field>
+
+        <button mat-flat-button color="primary" type="submit"
+          class="w-full h-12 text-base font-semibold rounded-lg mt-2"
+          [disabled]="form.invalid || cargando()">
+          @if (cargando()) {
+            <mat-spinner diameter="22"></mat-spinner>
+          } @else {
+            Iniciar Sesión
+          }
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-gray-500 mt-8">
+        ¿No tienes cuenta?
+        <a routerLink="/registro" class="text-blue-600 font-semibold hover:text-blue-700 transition-colors">Regístrate</a>
+      </p>
+    </div>
+  </div>
+</div>

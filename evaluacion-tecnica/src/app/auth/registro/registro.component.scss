@@ -1,0 +1,22 @@
+:host {
+  display: block;
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-form-field-subscript-wrapper {
+    min-height: 20px;
+  }
+}
+
+button[mat-flat-button] {
+  .mat-mdc-button-persistent-ripple,
+  .mdc-button__label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  mat-spinner {
+    margin: 0 auto;
+  }
+}

@@ -1,12 +1,10 @@
 {
   "ExpandedNodes": [
     "",
-    "\\CRUD_18_03",
-    "\\CRUD_18_03.Application",
-    "\\CRUD_18_03.Domain",
     "\\Domain",
-    "\\Domain\\Entities"
+    "\\Domain\\Entities",
+    "\\Properties"
   ],
-  "SelectedNode": "\\CRUD_18_03.csproj",
+  "SelectedNode": "\\Properties\\launchSettings.json",
   "PreviewInSolutionExplorer": false
 }

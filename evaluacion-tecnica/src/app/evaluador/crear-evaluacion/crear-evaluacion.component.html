@@ -1,0 +1,210 @@
+<div class="max-w-3xl mx-auto space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Nueva Evaluación</h1>
+    <p class="text-sm text-gray-500 mt-1">Configura los datos, agrega preguntas y guarda</p>
+  </div>
+
+  <mat-stepper orientation="horizontal" linear #stepper class="!bg-transparent !shadow-none">
+    <mat-step [stepControl]="datosForm" label="Datos Generales">
+      <form [formGroup]="datosForm" class="flex flex-col gap-4 mt-6">
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Título</mat-label>
+          <input matInput formControlName="titulo" placeholder="Ej: Evaluación Angular Senior">
+          @if (datosForm.controls.titulo.hasError('required') && datosForm.controls.titulo.touched) {
+            <mat-error>El título es requerido</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="w-full">
+          <mat-label>Descripción</mat-label>
+          <textarea matInput formControlName="descripcion" rows="3" placeholder="Descripción opcional..."></textarea>
+        </mat-form-field>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <mat-form-field appearance="outline">
+            <mat-label>Tecnología</mat-label>
+            <input matInput formControlName="tecnologia" placeholder="Ej: Angular, .NET, React">
+            @if (datosForm.controls.tecnologia.hasError('required') && datosForm.controls.tecnologia.touched) {
+              <mat-error>La tecnología es requerida</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Nivel</mat-label>
+            <mat-select formControlName="nivel">
+              @for (n of niveles; track n.value) {
+                <mat-option [value]="n.value">{{ n.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="w-full sm:w-1/2">
+          <mat-label>Tiempo límite (minutos)</mat-label>
+          <input matInput type="number" formControlName="tiempoLimiteTotalMinutos">
+          @if (datosForm.controls.tiempoLimiteTotalMinutos.hasError('min')) {
+            <mat-error>Mínimo 10 minutos</mat-error>
+          }
+          @if (datosForm.controls.tiempoLimiteTotalMinutos.hasError('max')) {
+            <mat-error>Máximo 300 minutos</mat-error>
+          }
+        </mat-form-field>
+
+        <div class="flex gap-6">
+          <mat-slide-toggle formControlName="requiereCamara">Requiere cámara</mat-slide-toggle>
+          <mat-slide-toggle formControlName="requiereMicrofono">Requiere micrófono</mat-slide-toggle>
+        </div>
+
+        <div class="flex justify-end mt-4">
+          <button mat-flat-button color="primary" matStepperNext [disabled]="datosForm.invalid">
+            Siguiente
+            <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <mat-step label="Preguntas" [optional]="true">
+      <div class="mt-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-gray-500">{{ preguntas.length }}/30 preguntas</p>
+          <button mat-stroked-button color="primary" (click)="agregarPregunta()" [disabled]="preguntas.length >= 30">
+            <mat-icon>add</mat-icon>
+            Agregar Pregunta
+          </button>
+        </div>
+
+        @if (preguntas.length === 0) {
+          <div class="flex flex-col items-center py-12 text-gray-400">
+            <mat-icon class="!text-5xl !w-12 !h-12 mb-3">quiz</mat-icon>
+            <p class="text-base font-medium">Sin preguntas aún</p>
+            <p class="text-sm mt-1">Puedes agregarlas ahora o después desde el detalle</p>
+          </div>
+        }
+
+        <form [formGroup]="preguntasForm">
+          <div formArrayName="preguntas" class="space-y-4">
+            @for (p of preguntas.controls; track $index; let i = $index) {
+              <mat-card class="!rounded-xl !shadow-sm border border-gray-100" [formGroupName]="i">
+                <mat-card-content class="p-5 space-y-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-semibold text-gray-500">Pregunta {{ i + 1 }}</span>
+                    <button mat-icon-button (click)="eliminarPregunta(i)" class="!text-red-400 hover:!text-red-600">
+                      <mat-icon>delete</mat-icon>
+                    </button>
+                  </div>
+
+                  <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Texto de la pregunta</mat-label>
+                    <textarea matInput formControlName="texto" rows="2"></textarea>
+                    @if (p.get('texto')?.hasError('required') && p.get('texto')?.touched) {
+                      <mat-error>El texto es requerido</mat-error>
+                    }
+                  </mat-form-field>
+
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <mat-form-field appearance="outline">
+                      <mat-label>Tipo</mat-label>
+                      <mat-select formControlName="tipo">
+                        @for (t of tiposPregunta; track t.value) {
+                          <mat-option [value]="t.value">{{ t.label }}</mat-option>
+                        }
+                      </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Puntaje máximo</mat-label>
+                      <input matInput type="number" formControlName="puntajeMaximo">
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                      <mat-label>Tiempo (seg)</mat-label>
+                      <input matInput type="number" formControlName="tiempoLimiteSegundos">
+                    </mat-form-field>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            }
+          </div>
+        </form>
+
+        <div class="flex justify-between mt-4">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_back</mat-icon>
+            Anterior
+          </button>
+          <button mat-flat-button color="primary" matStepperNext>
+            Siguiente
+            <mat-icon iconPositionEnd>arrow_forward</mat-icon>
+          </button>
+        </div>
+      </div>
+    </mat-step>
+
+    <mat-step label="Resumen">
+      <div class="mt-6 space-y-6">
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
+          <mat-card-header class="px-6 pt-5 pb-3">
+            <mat-card-title class="text-lg font-semibold text-gray-900">Datos Generales</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="px-6 pb-5">
+            <div class="grid grid-cols-2 gap-y-3 text-sm">
+              <span class="text-gray-500">Título</span>
+              <span class="font-medium text-gray-900">{{ datosForm.value.titulo }}</span>
+              <span class="text-gray-500">Tecnología</span>
+              <span class="font-medium text-gray-900">{{ datosForm.value.tecnologia }}</span>
+              <span class="text-gray-500">Nivel</span>
+              <span class="font-medium text-gray-900">{{ niveles[datosForm.value.nivel ?? 0].label }}</span>
+              <span class="text-gray-500">Tiempo límite</span>
+              <span class="font-medium text-gray-900">{{ datosForm.value.tiempoLimiteTotalMinutos }} min</span>
+            </div>
+            @if (datosForm.value.descripcion) {
+              <div class="mt-3 text-sm">
+                <span class="text-gray-500">Descripción:</span>
+                <p class="text-gray-700 mt-1">{{ datosForm.value.descripcion }}</p>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
+          <mat-card-header class="px-6 pt-5 pb-3">
+            <mat-card-title class="text-lg font-semibold text-gray-900">Preguntas ({{ preguntas.length }})</mat-card-title>
+          </mat-card-header>
+          <mat-card-content class="px-6 pb-5">
+            @if (preguntas.length === 0) {
+              <p class="text-sm text-gray-400">Sin preguntas — se guardarán como borrador</p>
+            } @else {
+              <div class="space-y-3">
+                @for (p of preguntas.controls; track $index; let i = $index) {
+                  <div class="flex items-start gap-3 text-sm">
+                    <span class="text-gray-400 font-medium mt-0.5">{{ i + 1 }}.</span>
+                    <div>
+                      <p class="text-gray-900">{{ p.value.texto }}</p>
+                      <p class="text-gray-500 text-xs mt-0.5">{{ nombreTipo(p.value.tipo) }} · {{ p.value.puntajeMaximo }} pts · {{ p.value.tiempoLimiteSegundos }}s</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <div class="flex justify-between">
+          <button mat-stroked-button matStepperPrevious>
+            <mat-icon>arrow_back</mat-icon>
+            Anterior
+          </button>
+          <button mat-flat-button color="primary" (click)="guardar()" [disabled]="datosForm.invalid || guardando()" class="h-11 px-6 rounded-lg">
+            @if (guardando()) {
+              <mat-spinner diameter="22" class="inline-block"></mat-spinner>
+            } @else {
+              <mat-icon>save</mat-icon>
+              Guardar Evaluación
+            }
+          </button>
+        </div>
+      </div>
+    </mat-step>
+  </mat-stepper>
+</div>
