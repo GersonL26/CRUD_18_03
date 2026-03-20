@@ -13,4 +13,6 @@ public interface IResultadoService
     Task<RankingEvaluacionDto> ObtenerRankingAsync(Guid evaluacionId, Guid evaluadorId);
 
     Task<ComparacionCandidatosDto> CompararCandidatosAsync(Guid evaluacionId, List<Guid> candidatoIds, Guid evaluadorId);
+
+    Task LiberarResultadoAsync(Guid candidatoId, Guid evaluadorId);
 }

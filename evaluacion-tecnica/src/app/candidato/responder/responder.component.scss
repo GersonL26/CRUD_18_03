@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+textarea {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+
+  &:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  }
+}
+
+::ng-deep .mat-mdc-progress-bar {
+  height: 3px !important;
+}

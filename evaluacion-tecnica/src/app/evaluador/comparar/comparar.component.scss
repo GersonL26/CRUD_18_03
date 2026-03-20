@@ -1,0 +1,74 @@
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.chart-card {
+  background: rgba(30, 41, 59, 0.7);
+}
+
+.chart-wrapper {
+  max-width: 520px;
+  width: 100%;
+}
+
+.grid-candidatos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.candidato-card {
+  background: rgba(30, 41, 59, 0.85);
+  border-top: 3px solid transparent;
+
+  &.card-0 { border-color: #3b82f6; }
+  &.card-1 { border-color: #10b981; }
+  &.card-2 { border-color: #f59e0b; }
+  &.card-3 { border-color: #ef4444; }
+}
+
+.avatar-icon {
+  background: rgba(59, 130, 246, 0.15);
+  border-radius: 50%;
+  padding: 6px;
+  font-size: 20px;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  color: #93c5fd;
+}
+
+.inline-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.scores-table {
+  .best-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    color: #fbbf24;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+}
+
+.truncate-text {
+  display: inline-block;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+}

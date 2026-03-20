@@ -9,7 +9,7 @@ public class Respuesta : BaseEntity
     public Guid PreguntaId { get; set; }
 
     // Datos del análisis IA (se llenan después)
-    public double? ScoreIA { get; set; }
+    public decimal? ScoreIA { get; set; }
     public string? FeedbackIA { get; set; }
     public string? BrechasIdentificadas { get; set; }
 

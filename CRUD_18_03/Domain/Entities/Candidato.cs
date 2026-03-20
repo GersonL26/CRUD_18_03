@@ -7,6 +7,7 @@ public class Candidato : BaseEntity
     public string Token { get; set; } = Guid.NewGuid().ToString("N");
     public DateTime? FechaInicioRespuesta { get; set; }
     public DateTime? FechaFinRespuesta { get; set; }
+    public int VecesSalioFoco { get; set; }
     public Guid EvaluacionId { get; set; }
     public Guid? UsuarioId { get; set; }
 

@@ -1,7 +1,10 @@
 using System.Security.Claims;
+using CRUD_18_03.Application.DTOs.Proctoring;
 using CRUD_18_03.Application.Interfaces;
+using CRUD_18_03.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CRUD_18_03.Controllers;
 
@@ -11,10 +14,12 @@ namespace CRUD_18_03.Controllers;
 public class ResultadosController : ControllerBase
 {
     private readonly IResultadoService _resultadoService;
+    private readonly ApplicationDbContext _dbContext;
 
-    public ResultadosController(IResultadoService resultadoService)
+    public ResultadosController(IResultadoService resultadoService, ApplicationDbContext dbContext)
     {
         _resultadoService = resultadoService;
+        _dbContext = dbContext;
     }
 
     [HttpGet("candidato/{candidatoId:guid}")]
@@ -53,6 +58,50 @@ public class ResultadosController : ControllerBase
         var comparacion = await _resultadoService.CompararCandidatosAsync(
             evaluacionId, request.CandidatoIds, evaluadorId);
         return Ok(comparacion);
+    }
+
+    [HttpPost("candidato/{candidatoId:guid}/liberar")]
+    public async Task<IActionResult> LiberarResultado(Guid candidatoId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        await _resultadoService.LiberarResultadoAsync(candidatoId, evaluadorId);
+        return Ok(new { message = "Resultado liberado para el candidato." });
+    }
+
+    [HttpGet("candidato/{candidatoId:guid}/proctoring")]
+    public async Task<IActionResult> ObtenerProctoring(Guid candidatoId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+
+        var candidato = await _dbContext.Candidatos
+            .Include(c => c.Evaluacion)
+            .FirstOrDefaultAsync(c => c.Id == candidatoId && c.EstaActivo)
+            ?? throw new KeyNotFoundException("Candidato no encontrado.");
+
+        if (candidato.Evaluacion!.EvaluadorId != evaluadorId)
+            throw new UnauthorizedAccessException("No tiene permiso.");
+
+        var eventos = await _dbContext.EventosProctoring
+            .Where(e => e.CandidatoId == candidatoId && e.EstaActivo)
+            .OrderBy(e => e.Timestamp)
+            .Select(e => new EventoProctoringDto
+            {
+                Id = e.Id,
+                Tipo = e.Tipo,
+                Detalle = e.Detalle,
+                Timestamp = e.Timestamp
+            })
+            .ToListAsync();
+
+        var resumen = new ResumenProctoringDto
+        {
+            VecesSalioFoco = candidato.VecesSalioFoco,
+            VecesCopyPaste = eventos.Count(e => e.Tipo == "CopyPaste"),
+            TranscripcionesAudio = eventos.Count(e => e.Tipo == "TranscripcionAudio"),
+            Eventos = eventos
+        };
+
+        return Ok(resumen);
     }
 
     private Guid ObtenerUsuarioId()

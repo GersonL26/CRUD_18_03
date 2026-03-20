@@ -183,6 +183,118 @@ public class SesionEnVivoService : ISesionEnVivoService
             ?? throw new KeyNotFoundException($"Sesión con ID '{sesionId}' no encontrada.");
     }
 
+    private async Task<SesionEnVivo> ObtenerSesionConDatosYValidarEvaluador(Guid sesionId, Guid evaluadorId)
+    {
+        var sesion = await ObtenerSesionConDatos(sesionId);
+        if (sesion.Evaluacion!.EvaluadorId != evaluadorId)
+            throw new UnauthorizedAccessException("No tiene permiso sobre esta sesión.");
+        return sesion;
+    }
+
+    // ── Evaluator-driven methods (in-person interview) ──
+
+    public async Task<PreguntaEnVivoDto> IniciarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId)
+    {
+        var sesion = await ObtenerSesionConDatosYValidarEvaluador(sesionId, evaluadorId);
+
+        if (sesion.SesionActiva)
+            throw new InvalidOperationException("La sesión ya fue iniciada.");
+        if (sesion.FueCompletada)
+            throw new InvalidOperationException("La sesión ya fue completada.");
+
+        sesion.SesionActiva = true;
+        sesion.InicioFaseActual = DateTime.UtcNow;
+        sesion.ModificadoEn = DateTime.UtcNow;
+
+        if (!sesion.Candidato!.FechaInicioRespuesta.HasValue)
+            sesion.Candidato.FechaInicioRespuesta = DateTime.UtcNow;
+
+        await _dbContext.SaveChangesAsync();
+
+        var preguntas = ObtenerPreguntasOrdenadas(sesion);
+        return MapToPreguntaDto(preguntas[0], 0, preguntas.Count);
+    }
+
+    public async Task<PreguntaEnVivoDto> ObtenerPreguntaActualPorEvaluadorAsync(Guid sesionId, Guid evaluadorId)
+    {
+        var sesion = await ObtenerSesionConDatosYValidarEvaluador(sesionId, evaluadorId);
+        ValidarSesionActiva(sesion);
+
+        var preguntas = ObtenerPreguntasOrdenadas(sesion);
+        return MapToPreguntaDto(preguntas[sesion.PreguntaActualIndex], sesion.PreguntaActualIndex, preguntas.Count);
+    }
+
+    public async Task<PreguntaEnVivoDto?> ResponderYAvanzarPorEvaluadorAsync(
+        Guid sesionId, Guid evaluadorId, ResponderPreguntaEnVivoDto dto)
+    {
+        var sesion = await ObtenerSesionConDatosYValidarEvaluador(sesionId, evaluadorId);
+        ValidarSesionActiva(sesion);
+
+        var preguntas = ObtenerPreguntasOrdenadas(sesion);
+        var preguntaActual = preguntas[sesion.PreguntaActualIndex];
+
+        if (dto.PreguntaId != preguntaActual.Id)
+            throw new InvalidOperationException("La pregunta respondida no corresponde a la pregunta actual.");
+
+        var respuestaExistente = await _dbContext.Respuestas
+            .FirstOrDefaultAsync(r => r.CandidatoId == sesion.CandidatoId && r.PreguntaId == dto.PreguntaId && r.EstaActivo);
+
+        if (respuestaExistente is not null)
+            throw new InvalidOperationException("Esta pregunta ya fue respondida.");
+
+        _dbContext.Respuestas.Add(new Respuesta
+        {
+            Contenido = dto.Contenido,
+            Timestamp = DateTime.UtcNow,
+            TiempoUsadoSegundos = dto.TiempoUsadoSegundos,
+            CandidatoId = sesion.CandidatoId,
+            PreguntaId = dto.PreguntaId
+        });
+
+        var esUltima = sesion.PreguntaActualIndex >= preguntas.Count - 1;
+
+        if (esUltima)
+        {
+            sesion.FueCompletada = true;
+            sesion.SesionActiva = false;
+            sesion.Candidato!.FechaFinRespuesta = DateTime.UtcNow;
+            sesion.Candidato.ModificadoEn = DateTime.UtcNow;
+        }
+        else
+        {
+            sesion.PreguntaActualIndex++;
+            sesion.InicioFaseActual = DateTime.UtcNow;
+        }
+
+        sesion.ModificadoEn = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+
+        if (esUltima)
+            return null;
+
+        return MapToPreguntaDto(preguntas[sesion.PreguntaActualIndex], sesion.PreguntaActualIndex, preguntas.Count);
+    }
+
+    public async Task FinalizarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId)
+    {
+        var sesion = await ObtenerSesionConDatosYValidarEvaluador(sesionId, evaluadorId);
+
+        if (sesion.FueCompletada)
+            throw new InvalidOperationException("La sesión ya fue completada.");
+
+        sesion.FueCompletada = true;
+        sesion.SesionActiva = false;
+        sesion.ModificadoEn = DateTime.UtcNow;
+
+        if (!sesion.Candidato!.FechaFinRespuesta.HasValue)
+        {
+            sesion.Candidato.FechaFinRespuesta = DateTime.UtcNow;
+            sesion.Candidato.ModificadoEn = DateTime.UtcNow;
+        }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
     private static void ValidarTokenCandidato(SesionEnVivo sesion, string token)
     {
         if (sesion.Candidato!.Token != token)

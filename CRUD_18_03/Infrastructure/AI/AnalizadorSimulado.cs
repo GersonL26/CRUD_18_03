@@ -25,7 +25,7 @@ public class AnalizadorSimulado : IAnalizadorIA
                 PreguntaId = item.PreguntaId,
                 Score = score,
                 Feedback = GenerarFeedback(score, item.PuntajeMaximo),
-                Brechas = score < item.PuntajeMaximo * 0.6
+                Brechas = score < item.PuntajeMaximo * 0.6m
                     ? $"Respuesta insuficiente para: {item.TextoPregunta[..Math.Min(50, item.TextoPregunta.Length)]}"
                     : string.Empty
             };
@@ -34,7 +34,7 @@ public class AnalizadorSimulado : IAnalizadorIA
         var scoreTotal = detalles.Count > 0
             ? detalles.Average(d => d.Score / preguntasYRespuestas
                 .First(p => p.PreguntaId == d.PreguntaId).PuntajeMaximo * 100)
-            : 0;
+            : 0m;
 
         var resultado = new ResultadoAnalisisIA
         {
@@ -48,7 +48,7 @@ public class AnalizadorSimulado : IAnalizadorIA
                 .Select(d => d.Brechas)),
             Fortalezas = string.Join(", ", detalles
                 .Where(d => d.Score >= preguntasYRespuestas
-                    .First(p => p.PreguntaId == d.PreguntaId).PuntajeMaximo * 0.7)
+                    .First(p => p.PreguntaId == d.PreguntaId).PuntajeMaximo * 0.7m)
                 .Select(d => $"Buen manejo en pregunta {preguntasYRespuestas
                     .First(p => p.PreguntaId == d.PreguntaId).TextoPregunta[..Math.Min(40, preguntasYRespuestas
                     .First(p => p.PreguntaId == d.PreguntaId).TextoPregunta.Length)]}"))
@@ -59,14 +59,14 @@ public class AnalizadorSimulado : IAnalizadorIA
         return Task.FromResult(resultado);
     }
 
-    private static double CalcularScoreSimulado(int longitudRespuesta, int puntajeMaximo)
+    private static decimal CalcularScoreSimulado(int longitudRespuesta, int puntajeMaximo)
     {
         // Heurística simple: respuestas más largas tienden a ser más completas
-        var factor = Math.Min(longitudRespuesta / 100.0, 1.0);
-        return Math.Round(puntajeMaximo * (0.4 + factor * 0.5), 2);
+        var factor = Math.Min((decimal)longitudRespuesta / 100m, 1.0m);
+        return Math.Round(puntajeMaximo * (0.4m + factor * 0.5m), 2);
     }
 
-    private static string GenerarFeedback(double score, int puntajeMaximo)
+    private static string GenerarFeedback(decimal score, int puntajeMaximo)
     {
         var porcentaje = score / puntajeMaximo * 100;
         return porcentaje switch
@@ -78,7 +78,7 @@ public class AnalizadorSimulado : IAnalizadorIA
         };
     }
 
-    private static string GenerarRecomendacion(double scoreTotal)
+    private static string GenerarRecomendacion(decimal scoreTotal)
     {
         return scoreTotal switch
         {

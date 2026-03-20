@@ -1,10 +1,12 @@
 import { Component, OnInit, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { AuthService } from '../../core/services/auth/auth.service';
 import { PruebaService } from '../../core/services/prueba/prueba.service';
 import { ResultadoCandidatoPublicoDto } from '../../core/models/resultado.model';
 
@@ -14,6 +16,7 @@ import { ResultadoCandidatoPublicoDto } from '../../core/models/resultado.model'
     DatePipe,
     MatCardModule,
     MatIconModule,
+    MatButtonModule,
     MatProgressSpinnerModule,
     MatChipsModule
   ],
@@ -27,13 +30,20 @@ export class MiResultadoComponent implements OnInit {
 
   private token = '';
 
+  estaAutenticado = false;
+
   constructor(
     private route: ActivatedRoute,
-    private pruebaService: PruebaService
-  ) {}
+    private router: Router,
+    private pruebaService: PruebaService,
+    private authService: AuthService
+  ) {
+    this.estaAutenticado = this.authService.isAuthenticated();
+  }
 
   ngOnInit(): void {
-    this.token = this.route.parent!.snapshot.paramMap.get('token')!;
+    this.token = this.route.snapshot.paramMap.get('token')
+      ?? this.route.parent?.snapshot.paramMap.get('token') ?? '';
     this.pruebaService.obtenerResultado(this.token).subscribe({
       next: res => {
         this.resultado.set(res);
@@ -58,5 +68,9 @@ export class MiResultadoComponent implements OnInit {
     if (score >= 60) return 'bg-blue-50';
     if (score >= 40) return 'bg-amber-50';
     return 'bg-red-50';
+  }
+
+  volverAlPanel(): void {
+    this.router.navigate(['/panel-candidato/mis-evaluaciones']);
   }
 }

@@ -1,27 +1,29 @@
-<div class="flex flex-col h-screen">
-  <mat-toolbar class="!bg-white !text-gray-900 z-10 shadow-sm border-b border-gray-200 !px-4">
-    <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center mr-3">
-      <mat-icon class="!text-base !w-5 !h-5 text-white">psychology</mat-icon>
+<div class="layout-container">
+  <mat-toolbar>
+    <div class="logo">
+      <div class="logo-icon">
+        <mat-icon>psychology</mat-icon>
+      </div>
+      <span class="logo-text">EvalTech IA</span>
     </div>
-    <span class="text-lg font-semibold tracking-tight text-gray-900">EvalTech IA</span>
     <span class="flex-1"></span>
-    <span class="text-sm mr-3 hidden sm:inline text-gray-500">{{ authService.nombreCompleto() }}</span>
-    <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión">
-      <mat-icon class="text-gray-500">logout</mat-icon>
+    <span class="user-name">{{ authService.nombreCompleto() }}</span>
+    <button mat-icon-button (click)="logout()" matTooltip="Cerrar sesión" class="logout-btn">
+      <mat-icon>logout</mat-icon>
     </button>
   </mat-toolbar>
 
-  <mat-sidenav-container class="flex-1">
-    <mat-sidenav opened mode="side" class="w-60 !bg-white !border-r !border-gray-200">
-      <mat-nav-list class="!pt-2">
-        <a mat-list-item routerLink="mis-evaluaciones" routerLinkActive="!bg-blue-50 !text-blue-700 font-semibold">
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav opened mode="side">
+      <mat-nav-list class="nav-list">
+        <a mat-list-item routerLink="mis-evaluaciones" routerLinkActive="active-link">
           <mat-icon matListItemIcon>assignment</mat-icon>
           <span matListItemTitle>Mis Evaluaciones</span>
         </a>
       </mat-nav-list>
     </mat-sidenav>
 
-    <mat-sidenav-content class="bg-gray-50 p-6">
+    <mat-sidenav-content>
       <router-outlet />
     </mat-sidenav-content>
   </mat-sidenav-container>

@@ -1,0 +1,60 @@
+<div class="max-w-7xl mx-auto">
+  <div class="page-header">
+    <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #10b981, #059669);">
+      <mat-icon class="text-white !text-xl !w-5 !h-5">videocam</mat-icon>
+    </div>
+    <div>
+      <p class="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-0.5">En Vivo</p>
+      <h1>Sesiones en Vivo</h1>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <app-loading-spinner mensaje="Cargando evaluaciones activas..." />
+  } @else if (evaluaciones().length === 0) {
+    <app-empty-state
+      icono="videocam_off"
+      titulo="No hay evaluaciones activas"
+      mensaje="Las sesiones en vivo solo están disponibles para evaluaciones con estado Activa." />
+  } @else {
+    <mat-card class="!rounded-xl !shadow-sm">
+      <table mat-table [dataSource]="evaluaciones()" class="w-full">
+        <ng-container matColumnDef="titulo">
+          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Evaluación</th>
+          <td mat-cell *matCellDef="let e" class="!font-medium">{{ e.titulo }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="tecnologia">
+          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Tecnología</th>
+          <td mat-cell *matCellDef="let e">{{ e.tecnologia }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="nivel">
+          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Nivel</th>
+          <td mat-cell *matCellDef="let e">{{ e.nivel | nivelBadge }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Estado</th>
+          <td mat-cell *matCellDef="let e">
+            <mat-chip highlighted>Activa</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Acciones</th>
+          <td mat-cell *matCellDef="let e">
+            <button mat-flat-button color="primary" (click)="irADetalle(e.id)">
+              <mat-icon>play_arrow</mat-icon>
+              Gestionar
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnas"
+            class="hover:bg-gray-50 cursor-pointer transition-colors"></tr>
+      </table>
+    </mat-card>
+  }
+</div>

@@ -75,6 +75,9 @@ public class ResultadoService : IResultadoService
         if (candidato.Resultado is null)
             throw new InvalidOperationException("El análisis aún no ha sido generado.");
 
+        if (!candidato.Resultado.ResultadoLiberado)
+            throw new InvalidOperationException("El resultado aún no ha sido liberado por el evaluador.");
+
         var evaluacion = candidato.Evaluacion!;
         var resultado = candidato.Resultado;
 
@@ -85,8 +88,6 @@ public class ResultadoService : IResultadoService
             Nivel = evaluacion.Nivel.ToString(),
             TituloEvaluacion = evaluacion.Titulo,
             ScoreTotal = resultado.ScoreTotal,
-            Recomendacion = resultado.Recomendacion,
-            ResumenIA = resultado.ResumenIA,
             Fortalezas = SplitLista(resultado.FortalezasDetectadas),
             Brechas = SplitLista(resultado.BrechasDetectadas),
             TiempoInvertido = ObtenerTiempoInvertido(candidato),
@@ -252,6 +253,7 @@ public class ResultadoService : IResultadoService
             Estado = estado,
             ScoreTotal = c.Resultado?.ScoreTotal,
             Recomendacion = c.Resultado?.Recomendacion,
+            ResultadoLiberado = c.Resultado?.ResultadoLiberado ?? false,
             TiempoInvertido = ObtenerTiempoInvertido(c),
             FechaFinRespuesta = c.FechaFinRespuesta,
             FechaAnalisis = c.Resultado?.GeneradoEn
@@ -316,5 +318,23 @@ public class ResultadoService : IResultadoService
 
         return texto.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .ToList();
+    }
+
+    public async Task LiberarResultadoAsync(Guid candidatoId, Guid evaluadorId)
+    {
+        var candidato = await _dbContext.Candidatos
+            .Include(c => c.Evaluacion)
+            .Include(c => c.Resultado)
+            .FirstOrDefaultAsync(c => c.Id == candidatoId && c.EstaActivo)
+            ?? throw new KeyNotFoundException($"Candidato con ID '{candidatoId}' no encontrado.");
+
+        ValidarPropietario(candidato.Evaluacion!, evaluadorId);
+
+        if (candidato.Resultado is null)
+            throw new InvalidOperationException("El análisis aún no ha sido generado.");
+
+        candidato.Resultado.ResultadoLiberado = true;
+        candidato.Resultado.ModificadoEn = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
     }
 }

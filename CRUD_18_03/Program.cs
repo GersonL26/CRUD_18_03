@@ -38,6 +38,7 @@ builder.Services.AddScoped<IAnalisisService, AnalisisService>();
 builder.Services.AddScoped<IResultadoService, ResultadoService>();
 builder.Services.AddSingleton<IGeneradorPDF, GeneradorPDFQuestPDF>();
 builder.Services.AddScoped<ISesionEnVivoService, SesionEnVivoService>();
+builder.Services.AddHttpClient<ITranscripcionService, TranscripcionWhisperService>();
 builder.Services.AddSignalR();
 
 // JWT Authentication
@@ -78,13 +79,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-}
-
-// Ensure database is created
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    await db.Database.EnsureCreatedAsync();
 }
 
 app.UseMiddleware<GlobalExceptionMiddleware>();

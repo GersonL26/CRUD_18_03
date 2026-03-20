@@ -15,11 +15,16 @@ public class SesionesController : ControllerBase
 {
     private readonly ISesionEnVivoService _sesionService;
     private readonly IHubContext<SesionHub> _hubContext;
+    private readonly ITranscripcionService _transcripcionService;
 
-    public SesionesController(ISesionEnVivoService sesionService, IHubContext<SesionHub> hubContext)
+    public SesionesController(
+        ISesionEnVivoService sesionService,
+        IHubContext<SesionHub> hubContext,
+        ITranscripcionService transcripcionService)
     {
         _sesionService = sesionService;
         _hubContext = hubContext;
+        _transcripcionService = transcripcionService;
     }
 
     [HttpPost]
@@ -35,6 +40,51 @@ public class SesionesController : ControllerBase
     {
         var estado = await _sesionService.ObtenerEstadoAsync(sesionId);
         return Ok(estado);
+    }
+
+    [HttpPost("{sesionId:guid}/iniciar")]
+    public async Task<IActionResult> IniciarSesion(Guid sesionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var pregunta = await _sesionService.IniciarSesionPorEvaluadorAsync(sesionId, evaluadorId);
+        return Ok(pregunta);
+    }
+
+    [HttpGet("{sesionId:guid}/pregunta-actual")]
+    public async Task<IActionResult> ObtenerPreguntaActual(Guid sesionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var pregunta = await _sesionService.ObtenerPreguntaActualPorEvaluadorAsync(sesionId, evaluadorId);
+        return Ok(pregunta);
+    }
+
+    [HttpPost("{sesionId:guid}/responder")]
+    public async Task<IActionResult> Responder(Guid sesionId, [FromBody] ResponderPreguntaEnVivoDto dto)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        var siguiente = await _sesionService.ResponderYAvanzarPorEvaluadorAsync(sesionId, evaluadorId, dto);
+
+        if (siguiente is null)
+            return Ok(new { message = "Sesión completada. Todas las preguntas fueron respondidas.", completada = true });
+
+        return Ok(siguiente);
+    }
+
+    [HttpPost("{sesionId:guid}/transcribir")]
+    [RequestSizeLimit(10 * 1024 * 1024)]
+    public async Task<IActionResult> Transcribir(Guid sesionId, IFormFile audio)
+    {
+        using var stream = audio.OpenReadStream();
+        var transcripcion = await _transcripcionService.TranscribirAudioAsync(stream, audio.FileName);
+        return Ok(new { transcripcion });
+    }
+
+    [HttpPost("{sesionId:guid}/finalizar")]
+    public async Task<IActionResult> FinalizarSesion(Guid sesionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        await _sesionService.FinalizarSesionPorEvaluadorAsync(sesionId, evaluadorId);
+        return Ok(new { message = "Sesión finalizada." });
     }
 
     private Guid ObtenerUsuarioId()

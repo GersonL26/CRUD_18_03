@@ -1,17 +1,19 @@
-<div class="space-y-6">
+<div class="space-y-8">
   <div class="flex items-center justify-between">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Dashboard</h1>
-      <p class="text-sm text-gray-500 mt-1">Resumen de tus evaluaciones técnicas</p>
+      <p class="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Panel de Control</p>
+      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Dashboard</h1>
+      <p class="text-sm text-gray-400 mt-1">Resumen general de evaluaciones técnicas</p>
     </div>
-    <a mat-flat-button color="primary" routerLink="/evaluador/crear" class="rounded-lg">
+    <a mat-flat-button color="primary" routerLink="/evaluador/crear" class="!h-11 !px-6 !font-semibold !shadow-lg"
+       style="background: linear-gradient(135deg, #1e3a5f, #3b82f6) !important;">
       <mat-icon>add</mat-icon>
       Nueva Evaluación
     </a>
   </div>
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-    <mat-card class="!rounded-xl !shadow-none border border-gray-200">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <mat-card class="stat-card">
       <mat-card-content class="p-5">
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm font-medium text-gray-600">Total</span>
@@ -24,7 +26,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="!rounded-xl !shadow-none border border-gray-200">
+    <mat-card class="stat-card">
       <mat-card-content class="p-5">
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm font-medium text-gray-600">Activas</span>
@@ -37,7 +39,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="!rounded-xl !shadow-none border border-gray-200">
+    <mat-card class="stat-card">
       <mat-card-content class="p-5">
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm font-medium text-gray-600">Borradores</span>
@@ -50,7 +52,7 @@
       </mat-card-content>
     </mat-card>
 
-    <mat-card class="!rounded-xl !shadow-none border border-gray-200">
+    <mat-card class="stat-card">
       <mat-card-content class="p-5">
         <div class="flex items-center justify-between mb-3">
           <span class="text-sm font-medium text-gray-600">Cerradas</span>
@@ -64,11 +66,11 @@
     </mat-card>
   </div>
 
-  <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
-    <mat-card-header class="px-6 pt-5 pb-3">
-      <mat-card-title class="text-lg font-semibold text-gray-900">Evaluaciones</mat-card-title>
+  <mat-card class="table-card">
+    <mat-card-header class="px-6 pt-6 pb-4">
+      <mat-card-title class="!text-lg !font-bold !text-gray-900 !tracking-tight">Evaluaciones</mat-card-title>
     </mat-card-header>
-    <mat-card-content class="px-0 pb-0">
+    <mat-card-content class="!px-0 !pb-0">
       @if (cargando()) {
         <div class="flex justify-center py-12">
           <mat-spinner diameter="36"></mat-spinner>
@@ -82,51 +84,49 @@
       } @else {
         <table mat-table [dataSource]="evaluaciones()" class="w-full">
           <ng-container matColumnDef="titulo">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Título</th>
-            <td mat-cell *matCellDef="let e" class="!font-medium !text-gray-900">{{ e.titulo }}</td>
+            <th mat-header-cell *matHeaderCellDef>Título</th>
+            <td mat-cell *matCellDef="let e" class="!font-semibold !text-gray-900">{{ e.titulo }}</td>
           </ng-container>
 
           <ng-container matColumnDef="tecnologia">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Tecnología</th>
+            <th mat-header-cell *matHeaderCellDef>Tecnología</th>
             <td mat-cell *matCellDef="let e">{{ e.tecnologia }}</td>
           </ng-container>
 
           <ng-container matColumnDef="nivel">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Nivel</th>
+            <th mat-header-cell *matHeaderCellDef>Nivel</th>
             <td mat-cell *matCellDef="let e">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                {{ nombreNivel(e.nivel) }}
-              </span>
+              <span class="badge badge-nivel">{{ nombreNivel(e.nivel) }}</span>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="estado">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Estado</th>
+            <th mat-header-cell *matHeaderCellDef>Estado</th>
             <td mat-cell *matCellDef="let e">
               @switch (e.estado) {
                 @case (1) {
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700">Borrador</span>
+                  <span class="badge badge-borrador">Borrador</span>
                 }
                 @case (2) {
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">Activa</span>
+                  <span class="badge badge-activa">Activa</span>
                 }
                 @case (3) {
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Cerrada</span>
+                  <span class="badge badge-cerrada">Cerrada</span>
                 }
               }
             </td>
           </ng-container>
 
           <ng-container matColumnDef="fecha">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Creada</th>
-            <td mat-cell *matCellDef="let e" class="!text-gray-500 !text-sm">{{ e.creadoEn | date:'dd/MM/yyyy' }}</td>
+            <th mat-header-cell *matHeaderCellDef>Creada</th>
+            <td mat-cell *matCellDef="let e" class="!text-gray-400 !text-sm">{{ e.creadoEn | date:'dd/MM/yyyy' }}</td>
           </ng-container>
 
           <ng-container matColumnDef="acciones">
-            <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold !text-right">Acciones</th>
+            <th mat-header-cell *matHeaderCellDef class="!text-right">Acciones</th>
             <td mat-cell *matCellDef="let e" class="!text-right">
               <button mat-icon-button matTooltip="Ver detalle" (click)="verDetalle(e.id)">
-                <mat-icon class="text-gray-500">visibility</mat-icon>
+                <mat-icon class="text-gray-400 hover:text-blue-600">visibility</mat-icon>
               </button>
             </td>
           </ng-container>

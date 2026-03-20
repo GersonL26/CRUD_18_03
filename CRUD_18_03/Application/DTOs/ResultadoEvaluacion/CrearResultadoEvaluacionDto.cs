@@ -6,7 +6,7 @@ public class CrearResultadoEvaluacionDto
 {
     [Required]
     [Range(0, 100, ErrorMessage = "El score debe estar entre 0 y 100.")]
-    public double ScoreTotal { get; set; }
+    public decimal ScoreTotal { get; set; }
 
     [Required(ErrorMessage = "El resumen de IA es obligatorio.")]
     public string ResumenIA { get; set; } = string.Empty;

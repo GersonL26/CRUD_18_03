@@ -7,6 +7,9 @@ export interface CandidatoDto {
   fechaFinRespuesta?: string;
   evaluacionId: string;
   usuarioId?: string;
+  tieneResultado: boolean;
+  resultadoLiberado: boolean;
+  vecesSalioFoco: number;
   creadoEn: string;
   estaActivo: boolean;
 }

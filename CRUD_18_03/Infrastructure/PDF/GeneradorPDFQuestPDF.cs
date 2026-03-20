@@ -29,10 +29,21 @@ public class GeneradorPDFQuestPDF : IGeneradorPDF
     {
         container.Column(col =>
         {
-            col.Item().Text("Reporte de Evaluación Técnica").FontSize(20).Bold().FontColor(Colors.Blue.Darken2);
-            col.Item().PaddingTop(5).Text($"Candidato: {r.CandidatoNombre}").FontSize(14).SemiBold();
-            col.Item().Text($"{r.Tecnologia} — Nivel {r.Nivel}").FontSize(11).FontColor(Colors.Grey.Darken1);
-            col.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
+            col.Item().Row(row =>
+            {
+                row.RelativeItem().Column(c =>
+                {
+                    c.Item().Text("EvalTech IA").FontSize(10).FontColor("#3b82f6").Bold();
+                    c.Item().PaddingTop(2).Text("Reporte de Evaluación Técnica").FontSize(20).Bold().FontColor("#1e293b");
+                    c.Item().PaddingTop(4).Text($"Candidato: {r.CandidatoNombre}").FontSize(13).SemiBold().FontColor("#334155");
+                    c.Item().PaddingTop(2).Text($"{r.Tecnologia} · Nivel {r.Nivel}").FontSize(10).FontColor("#64748b");
+                });
+                row.ConstantItem(80).AlignRight().AlignMiddle().Column(c =>
+                {
+                    c.Item().Text(DateTime.Now.ToString("dd/MM/yyyy")).FontSize(9).FontColor("#94a3b8");
+                });
+            });
+            col.Item().PaddingTop(8).LineHorizontal(2).LineColor("#3b82f6");
         });
     }
 
@@ -49,113 +60,147 @@ public class GeneradorPDFQuestPDF : IGeneradorPDF
 
     private static void ConstruirSeccionScore(ColumnDescriptor col, ResultadoCompletoDto r)
     {
-        col.Item().PaddingBottom(10).Background(ObtenerColorFondo(r.ScoreTotal)).Padding(15).Row(row =>
+        col.Item().PaddingBottom(12).Row(row =>
         {
-            row.RelativeItem().Column(c =>
+            row.RelativeItem().Border(1).BorderColor("#e2e8f0").Background("#f8fafc").Padding(16).Column(c =>
             {
-                c.Item().Text("Score Total").FontSize(11).FontColor(Colors.White);
-                c.Item().Text($"{r.ScoreTotal:F1} / 100").FontSize(24).Bold().FontColor(Colors.White);
+                c.Item().Text("SCORE TOTAL").FontSize(8).Bold().FontColor("#64748b").LetterSpacing(0.05f);
+                c.Item().PaddingTop(4).Text($"{r.ScoreTotal:F1}").FontSize(28).Bold().FontColor(ObtenerColorFondo(r.ScoreTotal));
+                c.Item().Text("de 100 puntos").FontSize(8).FontColor("#94a3b8");
             });
 
-            row.RelativeItem().AlignRight().Column(c =>
+            row.ConstantItem(8);
+
+            row.RelativeItem().Border(1).BorderColor("#e2e8f0").Background("#f8fafc").Padding(16).Column(c =>
             {
-                c.Item().Text("Recomendación").FontSize(11).FontColor(Colors.White);
-                c.Item().Text(r.Recomendacion).FontSize(16).Bold().FontColor(Colors.White);
+                c.Item().Text("RECOMENDACIÓN").FontSize(8).Bold().FontColor("#64748b").LetterSpacing(0.05f);
+                c.Item().PaddingTop(4).Text(r.Recomendacion).FontSize(16).Bold().FontColor("#1e293b");
+                c.Item().Text("según análisis IA").FontSize(8).FontColor("#94a3b8");
+            });
+
+            row.ConstantItem(8);
+
+            row.RelativeItem().Border(1).BorderColor("#e2e8f0").Background("#f8fafc").Padding(16).Column(c =>
+            {
+                c.Item().Text("TIEMPO INVERTIDO").FontSize(8).Bold().FontColor("#64748b").LetterSpacing(0.05f);
+                c.Item().PaddingTop(4).Text(r.TiempoInvertido ?? "—").FontSize(16).Bold().FontColor("#1e293b");
+                c.Item().Text(r.GeneradoEn.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor("#94a3b8");
             });
         });
-
-        if (!string.IsNullOrEmpty(r.TiempoInvertido))
-        {
-            col.Item().PaddingBottom(5).Text($"Tiempo invertido: {r.TiempoInvertido}")
-                .FontSize(9).FontColor(Colors.Grey.Darken1);
-        }
     }
 
     private static void ConstruirSeccionResumen(ColumnDescriptor col, ResultadoCompletoDto r)
     {
-        col.Item().PaddingTop(10).Text("Análisis de la IA").FontSize(13).Bold().FontColor(Colors.Blue.Darken2);
-        col.Item().PaddingTop(3).PaddingBottom(10).Text(r.ResumenIA).FontSize(10).LineHeight(1.4f);
+        if (string.IsNullOrWhiteSpace(r.ResumenIA)) return;
+        col.Item().PaddingTop(12).Border(1).BorderColor("#e2e8f0").Padding(16).Column(c =>
+        {
+            c.Item().Text("RESUMEN IA").FontSize(9).Bold().FontColor("#3b82f6").LetterSpacing(0.05f);
+            c.Item().PaddingTop(6).Text(r.ResumenIA).FontSize(10).FontColor("#334155").LineHeight(1.5f);
+        });
     }
 
     private static void ConstruirSeccionFortalezasYBrechas(ColumnDescriptor col, ResultadoCompletoDto r)
     {
-        col.Item().Row(row =>
+        col.Item().PaddingTop(12).Row(row =>
         {
-            row.RelativeItem().PaddingRight(10).Column(c =>
+            row.RelativeItem().PaddingRight(6).Border(1).BorderColor("#e2e8f0").Padding(14).Column(c =>
             {
-                c.Item().Text("Fortalezas").FontSize(12).Bold().FontColor("#2E7D32");
+                c.Item().Text("FORTALEZAS").FontSize(9).Bold().FontColor("#059669").LetterSpacing(0.05f);
+                c.Item().PaddingTop(6);
                 foreach (var f in SplitLista(r.FortalezasDetectadas))
-                    c.Item().PaddingTop(2).Text($"• {f}").FontSize(9);
+                    c.Item().PaddingTop(3).Text($"✓  {f}").FontSize(9).FontColor("#334155");
+                if (SplitLista(r.FortalezasDetectadas).Count == 0)
+                    c.Item().PaddingTop(3).Text("Sin fortalezas identificadas").FontSize(9).FontColor("#94a3b8").Italic();
             });
 
-            row.RelativeItem().Column(c =>
+            row.RelativeItem().PaddingLeft(6).Border(1).BorderColor("#e2e8f0").Padding(14).Column(c =>
             {
-                c.Item().Text("Brechas detectadas").FontSize(12).Bold().FontColor("#C62828");
+                c.Item().Text("BRECHAS DETECTADAS").FontSize(9).Bold().FontColor("#dc2626").LetterSpacing(0.05f);
+                c.Item().PaddingTop(6);
                 foreach (var b in SplitLista(r.BrechasDetectadas))
-                    c.Item().PaddingTop(2).Text($"• {b}").FontSize(9);
+                    c.Item().PaddingTop(3).Text($"▸  {b}").FontSize(9).FontColor("#334155");
+                if (SplitLista(r.BrechasDetectadas).Count == 0)
+                    c.Item().PaddingTop(3).Text("Sin brechas detectadas").FontSize(9).FontColor("#94a3b8").Italic();
             });
         });
     }
 
     private static void ConstruirSeccionDetalle(ColumnDescriptor col, ResultadoCompletoDto r)
     {
-        col.Item().PaddingTop(15).Text("Detalle por pregunta").FontSize(13).Bold().FontColor(Colors.Blue.Darken2);
-        col.Item().PaddingTop(3).LineHorizontal(0.5f).LineColor(Colors.Grey.Lighten1);
+        col.Item().PaddingTop(16).Text("DETALLE POR PREGUNTA").FontSize(11).Bold().FontColor("#1e293b").LetterSpacing(0.03f);
+        col.Item().PaddingTop(4).LineHorizontal(1).LineColor("#e2e8f0");
 
         foreach (var resp in r.Respuestas.OrderBy(x => x.OrdenEnEvaluacion))
         {
-            col.Item().PaddingTop(10).Border(0.5f).BorderColor(Colors.Grey.Lighten1).Padding(10).Column(pregCol =>
+            col.Item().PaddingTop(10).Border(1).BorderColor("#e2e8f0").Column(pregCol =>
             {
-                pregCol.Item().Row(headerRow =>
+                // Header con número y score
+                pregCol.Item().Background("#f8fafc").Padding(12).Row(headerRow =>
                 {
+                    headerRow.ConstantItem(24).AlignCenter()
+                        .Text(resp.OrdenEnEvaluacion.ToString()).FontSize(10).Bold().FontColor("#3b82f6");
+                    headerRow.ConstantItem(6);
                     headerRow.RelativeItem()
-                        .Text($"Pregunta {resp.OrdenEnEvaluacion}: {resp.TextoPregunta}")
-                        .FontSize(10).SemiBold();
+                        .Text(resp.TextoPregunta)
+                        .FontSize(10).SemiBold().FontColor("#1e293b");
                     headerRow.ConstantItem(80).AlignRight()
                         .Text($"{resp.ScoreIA?.ToString("F1") ?? "—"} / {resp.PuntajeMaximo}")
                         .FontSize(10).Bold().FontColor(ObtenerColorScore(resp.ScoreIA, resp.PuntajeMaximo));
                 });
 
-                pregCol.Item().PaddingTop(5).Text("Respuesta:").FontSize(8).FontColor(Colors.Grey.Darken1);
-                pregCol.Item().Text(resp.ContenidoRespuesta).FontSize(9).LineHeight(1.3f);
-
-                if (!string.IsNullOrEmpty(resp.FeedbackIA))
+                // Respuesta
+                pregCol.Item().Padding(12).Column(bodyCol =>
                 {
-                    pregCol.Item().PaddingTop(5).Text("Feedback IA:").FontSize(8).FontColor(Colors.Blue.Darken1);
-                    pregCol.Item().Text(resp.FeedbackIA).FontSize(9).Italic().LineHeight(1.3f);
-                }
+                    bodyCol.Item().Text("RESPUESTA DEL CANDIDATO").FontSize(7).Bold().FontColor("#64748b").LetterSpacing(0.05f);
+                    bodyCol.Item().PaddingTop(4).Text(resp.ContenidoRespuesta ?? "(sin respuesta)")
+                        .FontSize(9).FontColor("#334155").LineHeight(1.4f);
 
-                if (!string.IsNullOrEmpty(resp.BrechasIdentificadas))
-                {
-                    pregCol.Item().PaddingTop(3).Text($"Brechas: {resp.BrechasIdentificadas}")
-                        .FontSize(8).FontColor("#C62828");
-                }
+                    if (!string.IsNullOrEmpty(resp.FeedbackIA))
+                    {
+                        bodyCol.Item().PaddingTop(8).Background("#eff6ff").Padding(10).Column(fbCol =>
+                        {
+                            fbCol.Item().Text("FEEDBACK IA").FontSize(7).Bold().FontColor("#3b82f6").LetterSpacing(0.05f);
+                            fbCol.Item().PaddingTop(3).Text(resp.FeedbackIA)
+                                .FontSize(9).FontColor("#1e40af").LineHeight(1.4f);
+                        });
+                    }
 
-                if (resp.TiempoUsadoSegundos.HasValue)
-                {
-                    pregCol.Item().PaddingTop(3).Text($"Tiempo: {resp.TiempoUsadoSegundos}s")
-                        .FontSize(8).FontColor(Colors.Grey.Darken1);
-                }
+                    if (!string.IsNullOrEmpty(resp.BrechasIdentificadas))
+                    {
+                        bodyCol.Item().PaddingTop(6).Text($"Brechas: {resp.BrechasIdentificadas}")
+                            .FontSize(8).FontColor("#dc2626");
+                    }
+
+                    if (resp.TiempoUsadoSegundos.HasValue)
+                    {
+                        bodyCol.Item().PaddingTop(4).Text($"⏱ {resp.TiempoUsadoSegundos}s")
+                            .FontSize(8).FontColor("#94a3b8");
+                    }
+                });
             });
         }
     }
 
     private static void ConstruirPie(IContainer container)
     {
-        container.Row(row =>
+        container.Column(c =>
         {
-            row.RelativeItem().Text(t =>
+            c.Item().LineHorizontal(1).LineColor("#e2e8f0");
+            c.Item().PaddingTop(8).Row(row =>
             {
-                t.Span("Generado el ").FontSize(8).FontColor(Colors.Grey.Medium);
-                t.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor(Colors.Grey.Medium);
-            });
+                row.RelativeItem().Text(t =>
+                {
+                    t.Span("EvalTech IA — Generado el ").FontSize(8).FontColor("#94a3b8");
+                    t.Span(DateTime.Now.ToString("dd/MM/yyyy HH:mm")).FontSize(8).FontColor("#64748b");
+                });
 
-            row.RelativeItem().AlignRight().Text(t =>
-            {
-                t.Span("Página ").FontSize(8).FontColor(Colors.Grey.Medium);
-                t.CurrentPageNumber().FontSize(8).FontColor(Colors.Grey.Medium);
-                t.Span(" de ").FontSize(8).FontColor(Colors.Grey.Medium);
-                t.TotalPages().FontSize(8).FontColor(Colors.Grey.Medium);
+                row.RelativeItem().AlignRight().Text(t =>
+                {
+                    t.Span("Página ").FontSize(8).FontColor("#94a3b8");
+                    t.CurrentPageNumber().FontSize(8).FontColor("#64748b");
+                    t.Span(" de ").FontSize(8).FontColor("#94a3b8");
+                    t.TotalPages().FontSize(8).FontColor("#64748b");
+                });
             });
         });
     }
@@ -231,10 +276,10 @@ public class GeneradorPDFQuestPDF : IGeneradorPDF
         }).GeneratePdf();
     }
 
-    private static string ObtenerColorFondo(double score) =>
+    private static string ObtenerColorFondo(decimal score) =>
         score >= 70 ? "#2E7D32" : score >= 50 ? "#F57F17" : "#C62828";
 
-    private static string ObtenerColorScore(double? score, int maximo)
+    private static string ObtenerColorScore(decimal? score, int maximo)
     {
         if (!score.HasValue) return Colors.Grey.Medium;
         var porcentaje = score.Value / maximo * 100;

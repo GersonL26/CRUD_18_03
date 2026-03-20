@@ -11,6 +11,8 @@ import { PruebaService } from '../../core/services/prueba/prueba.service';
 import { EvaluacionCandidatoDto, PreguntaCandidatoDto, RespuestaItemDto } from '../../core/models/candidato.model';
 import { TipoPregunta } from '../../core/models/evaluacion.model';
 
+const HAS_AUTH = () => !!localStorage.getItem('jwt_token');
+
 @Component({
   selector: 'app-responder',
   imports: [
@@ -34,9 +36,21 @@ export class ResponderComponent implements OnInit, OnDestroy {
   respuestas = signal<Map<string, RespuestaItemDto>>(new Map());
   tiempoRestante = signal(0);
 
+  // Proctoring signals
+  micActivo = signal(false);
+  micPermisoDenegado = signal(false);
+
   private token = '';
   private intervalo: ReturnType<typeof setInterval> | null = null;
   private iniciosPregunta: Map<string, number> = new Map();
+  private onVisibilityChange = this.handleVisibilityChange.bind(this);
+  private onPaste = this.handlePaste.bind(this);
+  private onCopy = this.handleCopy.bind(this);
+
+  // Microphone recording
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: Blob[] = [];
+  private audioInterval: ReturnType<typeof setInterval> | null = null;
 
   preguntaActual = computed(() => {
     const ev = this.evaluacion();
@@ -76,7 +90,7 @@ export class ResponderComponent implements OnInit, OnDestroy {
     this.pruebaService.obtenerPorToken(this.token).subscribe({
       next: ev => {
         if (ev.yaRespondio) {
-          this.router.navigate(['resultado'], { relativeTo: this.route.parent });
+          this.navegarAResultado();
           return;
         }
         this.evaluacion.set(ev);
@@ -84,6 +98,16 @@ export class ResponderComponent implements OnInit, OnDestroy {
         this.tiempoRestante.set(ev.tiempoLimiteTotalMinutos * 60);
         this.iniciarTemporizador();
         this.registrarInicioPregunta();
+
+        // Proctoring listeners
+        document.addEventListener('visibilitychange', this.onVisibilityChange);
+        document.addEventListener('paste', this.onPaste, true);
+        document.addEventListener('copy', this.onCopy, true);
+
+        // Start microphone if evaluación requires it
+        if (ev.requiereMicrofono) {
+          this.iniciarMicrofono();
+        }
       },
       error: () => {
         this.error.set('No se pudo cargar la evaluación.');
@@ -94,6 +118,10 @@ export class ResponderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.detenerTemporizador();
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
+    document.removeEventListener('paste', this.onPaste, true);
+    document.removeEventListener('copy', this.onCopy, true);
+    this.detenerMicrofono();
   }
 
   getRespuestaContenido(preguntaId: string): string {
@@ -144,7 +172,7 @@ export class ResponderComponent implements OnInit, OnDestroy {
     this.pruebaService.enviarRespuestas(this.token, { respuestas: respuestasArray }).subscribe({
       next: () => {
         this.snackBar.open('Respuestas enviadas correctamente', 'OK', { duration: 3000 });
-        this.router.navigate(['resultado'], { relativeTo: this.route.parent });
+        this.navegarAResultado();
       },
       error: (err) => {
         this.enviando.set(false);
@@ -207,5 +235,96 @@ export class ResponderComponent implements OnInit, OnDestroy {
     });
     this.respuestas.set(map);
     this.iniciosPregunta.delete(p.id);
+  }
+
+  private navegarAResultado(): void {
+    if (HAS_AUTH()) {
+      this.router.navigate(['/panel-candidato/evaluacion', this.token, 'resultado']);
+    } else {
+      this.router.navigate(['/candidato', this.token, 'resultado']);
+    }
+  }
+
+  private handleVisibilityChange(): void {
+    if (document.hidden && !this.enviando()) {
+      this.pruebaService.reportarPerdidaFoco(this.token).subscribe();
+      this.snackBar.open('⚠️ Se detectó que saliste de la prueba. Esto quedará registrado.', 'OK', { duration: 5000 });
+    }
+  }
+
+  // --- Copy/Paste proctoring ---
+  private handlePaste(event: Event): void {
+    if (this.enviando()) return;
+    const clipEvent = event as ClipboardEvent;
+    const texto = clipEvent.clipboardData?.getData('text') ?? '';
+    this.pruebaService.registrarEventoProctoring(
+      this.token, 'CopyPaste',
+      `Pegó texto (${texto.length} chars): ${texto.substring(0, 200)}`
+    ).subscribe();
+    this.snackBar.open('⚠️ Se detectó un pegado de texto. Esto quedará registrado.', 'OK', { duration: 4000 });
+  }
+
+  private handleCopy(event: Event): void {
+    if (this.enviando()) return;
+    this.pruebaService.registrarEventoProctoring(
+      this.token, 'CopyPaste', 'Copió texto del examen'
+    ).subscribe();
+  }
+
+  // --- Microphone proctoring ---
+  private async iniciarMicrofono(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      this.audioChunks = [];
+
+      this.mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) this.audioChunks.push(e.data);
+      };
+
+      this.mediaRecorder.onstop = () => {
+        if (this.audioChunks.length > 0) {
+          const blob = new Blob(this.audioChunks, { type: 'audio/webm' });
+          if (blob.size > 1000) {
+            this.pruebaService.enviarAudio(this.token, blob).subscribe();
+          }
+          this.audioChunks = [];
+        }
+      };
+
+      this.mediaRecorder.start();
+      this.micActivo.set(true);
+
+      // Send audio every 30 seconds for transcription
+      this.audioInterval = setInterval(() => {
+        if (this.mediaRecorder?.state === 'recording') {
+          this.mediaRecorder.stop();
+          setTimeout(() => {
+            if (this.mediaRecorder && !this.enviando()) {
+              this.mediaRecorder.start();
+            }
+          }, 500);
+        }
+      }, 30000);
+
+    } catch {
+      this.micPermisoDenegado.set(true);
+      this.pruebaService.registrarEventoProctoring(
+        this.token, 'MicDenegado', 'El candidato denegó el permiso de micrófono'
+      ).subscribe();
+    }
+  }
+
+  private detenerMicrofono(): void {
+    if (this.audioInterval) {
+      clearInterval(this.audioInterval);
+      this.audioInterval = null;
+    }
+    if (this.mediaRecorder?.state === 'recording') {
+      this.mediaRecorder.stop();
+    }
+    this.mediaRecorder?.stream?.getTracks().forEach(t => t.stop());
+    this.mediaRecorder = null;
+    this.micActivo.set(false);
   }
 }

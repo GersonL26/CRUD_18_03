@@ -9,87 +9,85 @@
         <mat-icon class="!text-3xl text-amber-600">hourglass_top</mat-icon>
       </div>
       <h2 class="text-xl font-bold text-gray-900">Resultado en revisión</h2>
-      <p class="text-gray-500 text-sm">Tus respuestas están siendo analizadas. Recibirás el resultado pronto.</p>
+      <p class="text-gray-500 text-sm">Tus respuestas están siendo analizadas por el evaluador. Recibirás el resultado cuando sea liberado.</p>
+      @if (estaAutenticado) {
+        <button mat-stroked-button color="primary" (click)="volverAlPanel()" class="mt-4">
+          <mat-icon>arrow_back</mat-icon>
+          Volver a Mis Evaluaciones
+        </button>
+      }
     </div>
   </div>
 } @else if (resultado(); as r) {
   <div class="min-h-screen bg-gray-50 p-6">
-    <div class="max-w-2xl mx-auto space-y-6">
+    <div class="max-w-4xl mx-auto space-y-6">
       <!-- Header -->
       <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-2"
-             [class]="r.scoreTotal >= 60 ? 'bg-green-100' : 'bg-red-100'">
-          <mat-icon class="!text-3xl"
-                    [class]="r.scoreTotal >= 60 ? 'text-green-600' : 'text-red-600'">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-2 shadow-lg"
+             [style.background]="r.scoreTotal >= 60 ? 'linear-gradient(135deg, #10b981, #059669)' : 'linear-gradient(135deg, #ef4444, #dc2626)'">
+          <mat-icon class="!text-3xl text-white">
             {{ r.scoreTotal >= 60 ? 'emoji_events' : 'sentiment_dissatisfied' }}
           </mat-icon>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ r.tituloEvaluacion }}</h1>
+        <h1 class="text-2xl font-extrabold text-gray-900">{{ r.tituloEvaluacion }}</h1>
         <p class="text-sm text-gray-500">{{ r.tecnologia }} · {{ r.nivel }}</p>
-        <p class="text-xs text-gray-400">Candidato: {{ r.candidatoNombre }}</p>
+        <p class="text-xs text-gray-400">{{ r.candidatoNombre }}</p>
       </div>
 
-      <!-- Score card -->
-      <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
-        <mat-card-content class="p-6">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm text-gray-500 mb-1">Puntaje Total</p>
-              <p class="text-4xl font-bold {{ colorScore(r.scoreTotal) }}">{{ r.scoreTotal }}<span class="text-lg text-gray-400">/100</span></p>
-            </div>
-            <div class="text-right space-y-1">
-              <p class="text-sm text-gray-500">Recomendación</p>
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ bgScore(r.scoreTotal) }} {{ colorScore(r.scoreTotal) }}">
-                {{ r.recomendacion }}
-              </span>
-            </div>
-          </div>
-          @if (r.tiempoInvertido) {
-            <p class="text-xs text-gray-400 mt-3">Tiempo invertido: {{ r.tiempoInvertido }}</p>
-          }
-        </mat-card-content>
-      </mat-card>
-
-      <!-- Resumen IA -->
-      @if (r.resumenIA) {
-        <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
-          <mat-card-content class="p-6">
-            <h2 class="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
-              <mat-icon class="text-blue-500 !text-lg">smart_toy</mat-icon>
-              Análisis
-            </h2>
-            <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ r.resumenIA }}</p>
+      <!-- Score + Stats cards -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-200 md:col-span-1">
+          <mat-card-content class="p-5 text-center">
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Puntaje Total</p>
+            <p class="text-5xl font-bold {{ colorScore(r.scoreTotal) }}">{{ r.scoreTotal }}</p>
+            <p class="text-sm text-gray-400 mt-1">de 100 puntos</p>
           </mat-card-content>
         </mat-card>
-      }
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-200 md:col-span-1">
+          <mat-card-content class="p-5 text-center">
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Preguntas Evaluadas</p>
+            <p class="text-4xl font-bold text-gray-800">{{ r.respuestas?.length || 0 }}</p>
+            <p class="text-sm text-gray-400 mt-1">preguntas respondidas</p>
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-200 md:col-span-1">
+          <mat-card-content class="p-5 text-center">
+            <p class="text-xs text-gray-400 uppercase tracking-wider mb-2">Tiempo Invertido</p>
+            <p class="text-4xl font-bold text-gray-800">{{ r.tiempoInvertido || '—' }}</p>
+            <p class="text-sm text-gray-400 mt-1">hh:mm:ss</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
 
       <!-- Fortalezas y brechas -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @if (r.fortalezas && r.fortalezas.length) {
-          <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
-            <mat-card-content class="p-5">
-              <h3 class="text-sm font-semibold text-green-700 mb-3 flex items-center gap-1.5">
-                <mat-icon class="!text-lg">thumb_up</mat-icon>
-                Fortalezas
-              </h3>
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
+          <mat-card-content class="p-5">
+            <h3 class="text-sm font-semibold text-green-700 mb-3 flex items-center gap-1.5">
+              <mat-icon class="!text-lg">thumb_up</mat-icon>
+              Fortalezas
+            </h3>
+            @if (r.fortalezas && r.fortalezas.length) {
               <ul class="space-y-2">
                 @for (f of r.fortalezas; track f) {
                   <li class="flex items-start gap-2 text-sm text-gray-600">
-                    <mat-icon class="!text-sm text-green-500 mt-0.5 shrink-0">check</mat-icon>
+                    <mat-icon class="!text-sm text-green-500 mt-0.5 shrink-0">check_circle</mat-icon>
                     {{ f }}
                   </li>
                 }
               </ul>
-            </mat-card-content>
-          </mat-card>
-        }
-        @if (r.brechas && r.brechas.length) {
-          <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
-            <mat-card-content class="p-5">
-              <h3 class="text-sm font-semibold text-amber-700 mb-3 flex items-center gap-1.5">
-                <mat-icon class="!text-lg">trending_up</mat-icon>
-                Áreas de Mejora
-              </h3>
+            } @else {
+              <p class="text-sm text-gray-400 italic">Sin fortalezas identificadas aún.</p>
+            }
+          </mat-card-content>
+        </mat-card>
+        <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
+          <mat-card-content class="p-5">
+            <h3 class="text-sm font-semibold text-amber-700 mb-3 flex items-center gap-1.5">
+              <mat-icon class="!text-lg">trending_up</mat-icon>
+              Áreas de Mejora
+            </h3>
+            @if (r.brechas && r.brechas.length) {
               <ul class="space-y-2">
                 @for (b of r.brechas; track b) {
                   <li class="flex items-start gap-2 text-sm text-gray-600">
@@ -98,30 +96,39 @@
                   </li>
                 }
               </ul>
-            </mat-card-content>
-          </mat-card>
-        }
+            } @else {
+              <p class="text-sm text-gray-400 italic">Sin áreas de mejora identificadas.</p>
+            }
+          </mat-card-content>
+        </mat-card>
       </div>
 
       <!-- Desglose por pregunta -->
       @if (r.respuestas && r.respuestas.length) {
         <mat-card class="!rounded-xl !shadow-sm border border-gray-200">
           <mat-card-content class="p-6">
-            <h2 class="text-base font-semibold text-gray-900 mb-4">Desglose por Pregunta</h2>
-            <div class="space-y-4">
+            <h2 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <mat-icon class="!text-lg text-indigo-500">quiz</mat-icon>
+              Desglose por Pregunta
+            </h2>
+            <div class="space-y-3">
               @for (rp of r.respuestas; track rp.ordenEnEvaluacion) {
-                <div class="border border-gray-100 rounded-lg p-4">
+                <div class="border border-gray-100 rounded-lg p-4 hover:border-gray-200 transition-colors">
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-gray-900">Pregunta {{ rp.ordenEnEvaluacion }}</span>
+                    <span class="text-sm font-medium text-gray-900 flex items-center gap-2">
+                      <span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold {{ bgScore(((rp.scoreIA ?? 0) / rp.puntajeMaximo) * 100) }} {{ colorScore(((rp.scoreIA ?? 0) / rp.puntajeMaximo) * 100) }}">
+                        {{ rp.ordenEnEvaluacion }}
+                      </span>
+                      {{ rp.textoPregunta }}
+                    </span>
                     @if (rp.scoreIA !== null && rp.scoreIA !== undefined) {
-                      <span class="text-sm font-semibold {{ colorScore((rp.scoreIA / rp.puntajeMaximo) * 100) }}">
+                      <span class="text-sm font-semibold whitespace-nowrap ml-4 {{ colorScore((rp.scoreIA / rp.puntajeMaximo) * 100) }}">
                         {{ rp.scoreIA }}/{{ rp.puntajeMaximo }}
                       </span>
                     }
                   </div>
-                  <p class="text-sm text-gray-500 mb-2">{{ rp.textoPregunta }}</p>
                   @if (rp.feedbackIA) {
-                    <p class="text-xs text-gray-400 italic">{{ rp.feedbackIA }}</p>
+                    <p class="text-xs text-gray-500 italic ml-8">{{ rp.feedbackIA }}</p>
                   }
                 </div>
               }
@@ -133,6 +140,15 @@
       <p class="text-center text-xs text-gray-400 pb-4">
         Resultado generado el {{ r.generadoEn | date:'dd/MM/yyyy HH:mm' }}
       </p>
+
+      @if (estaAutenticado) {
+        <div class="text-center pb-6">
+          <button mat-stroked-button color="primary" (click)="volverAlPanel()">
+            <mat-icon>arrow_back</mat-icon>
+            Volver a Mis Evaluaciones
+          </button>
+        </div>
+      }
     </div>
   </div>
 }

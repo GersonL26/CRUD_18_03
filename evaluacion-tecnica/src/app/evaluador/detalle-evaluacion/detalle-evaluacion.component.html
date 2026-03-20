@@ -3,12 +3,13 @@
     <mat-spinner diameter="40"></mat-spinner>
   </div>
 } @else if (evaluacion(); as ev) {
-  <div class="max-w-4xl mx-auto space-y-6">
+  <div class="max-w-6xl mx-auto space-y-6">
     <div class="flex items-start justify-between flex-wrap gap-4">
       <div>
+        <p class="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Evaluación</p>
         <div class="flex items-center gap-3">
-          <h1 class="text-2xl font-bold text-gray-900">{{ ev.titulo }}</h1>
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ claseEstado(ev.estado) }}">
+          <h1 class="text-2xl font-extrabold text-gray-900">{{ ev.titulo }}</h1>
+          <span class="inline-flex items-center px-3 py-1 rounded-lg text-xs font-semibold {{ claseEstado(ev.estado) }}">
             {{ nombreEstado(ev.estado) }}
           </span>
         </div>
@@ -253,22 +254,30 @@
                 <ng-container matColumnDef="estado">
                   <th mat-header-cell *matHeaderCellDef class="!text-gray-500 !font-semibold">Estado</th>
                   <td mat-cell *matCellDef="let c">
-                    @if (c.fechaFinRespuesta) {
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
-                        <mat-icon class="!text-sm !w-3.5 !h-3.5">check_circle</mat-icon>
-                        Completado
-                      </span>
-                    } @else if (c.fechaInicioRespuesta) {
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
-                        <mat-icon class="!text-sm !w-3.5 !h-3.5">pending</mat-icon>
-                        En progreso
-                      </span>
-                    } @else {
-                      <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                        <mat-icon class="!text-sm !w-3.5 !h-3.5">schedule</mat-icon>
-                        Asignado
-                      </span>
-                    }
+                    <div class="flex items-center gap-2">
+                      @if (c.fechaFinRespuesta) {
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                          <mat-icon class="!text-sm !w-3.5 !h-3.5">check_circle</mat-icon>
+                          Completado
+                        </span>
+                      } @else if (c.fechaInicioRespuesta) {
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700">
+                          <mat-icon class="!text-sm !w-3.5 !h-3.5">pending</mat-icon>
+                          En progreso
+                        </span>
+                      } @else {
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                          <mat-icon class="!text-sm !w-3.5 !h-3.5">schedule</mat-icon>
+                          Asignado
+                        </span>
+                      }
+                      @if (c.vecesSalioFoco > 0) {
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-50 text-red-700" [matTooltip]="'Salió de la prueba ' + c.vecesSalioFoco + ' vez/veces'">
+                          <mat-icon class="!text-sm !w-3.5 !h-3.5">warning</mat-icon>
+                          {{ c.vecesSalioFoco }}
+                        </span>
+                      }
+                    </div>
                   </td>
                 </ng-container>
                 <ng-container matColumnDef="fecha">
@@ -276,11 +285,44 @@
                   <td mat-cell *matCellDef="let c" class="!text-gray-500 text-sm">{{ c.creadoEn | date:'dd/MM/yy HH:mm' }}</td>
                 </ng-container>
                 <ng-container matColumnDef="acciones">
-                  <th mat-header-cell *matHeaderCellDef class="!w-16"></th>
+                  <th mat-header-cell *matHeaderCellDef class="!w-44"></th>
                   <td mat-cell *matCellDef="let c">
-                    <button mat-icon-button matTooltip="Eliminar" (click)="eliminarCandidato(c.id)" class="!text-red-400" [disabled]="!!c.fechaFinRespuesta">
-                      <mat-icon>delete</mat-icon>
-                    </button>
+                    <div class="flex items-center gap-1">
+                      @if (creandoSesionId() === c.id) {
+                        <mat-spinner diameter="20" class="mx-2"></mat-spinner>
+                      } @else if (!c.fechaInicioRespuesta && esActiva()) {
+                        <button mat-icon-button matTooltip="Iniciar sesión en vivo" (click)="crearSesionVivo(c)" class="!text-emerald-600">
+                          <mat-icon>videocam</mat-icon>
+                        </button>
+                      }
+                      @if (c.fechaFinRespuesta) {
+                        @if (analizandoId() === c.id) {
+                          <mat-spinner diameter="20" class="mx-2"></mat-spinner>
+                        } @else if (liberandoId() === c.id) {
+                          <mat-spinner diameter="20" class="mx-2"></mat-spinner>
+                        } @else {
+                          @if (!c.tieneResultado) {
+                            <button mat-icon-button matTooltip="Analizar con IA" (click)="analizarCandidato(c.id)" class="!text-blue-500">
+                              <mat-icon>smart_toy</mat-icon>
+                            </button>
+                          } @else {
+                            <button mat-icon-button matTooltip="Ver resultado" (click)="verResultado(c.id)" class="!text-green-600">
+                              <mat-icon>assessment</mat-icon>
+                            </button>
+                            @if (!c.resultadoLiberado) {
+                              <button mat-icon-button matTooltip="Liberar resultado al candidato" (click)="liberarResultado(c.id)" class="!text-purple-500">
+                                <mat-icon>lock_open</mat-icon>
+                              </button>
+                            } @else {
+                              <mat-icon matTooltip="Resultado liberado" class="!text-green-400 !text-xl mx-1">verified</mat-icon>
+                            }
+                          }
+                        }
+                      }
+                      <button mat-icon-button matTooltip="Eliminar" (click)="eliminarCandidato(c.id)" class="!text-red-400" [disabled]="!!c.fechaFinRespuesta">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
                   </td>
                 </ng-container>
                 <tr mat-header-row *matHeaderRowDef="columnasCandidatos"></tr>

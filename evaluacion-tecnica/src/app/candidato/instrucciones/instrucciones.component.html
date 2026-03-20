@@ -11,10 +11,10 @@
   <div class="min-h-screen bg-gray-50 flex items-center justify-center p-6">
     <div class="max-w-xl w-full space-y-6">
       <div class="text-center">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-100 mb-4">
-          <mat-icon class="!text-3xl text-blue-600">assignment</mat-icon>
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+          <mat-icon class="!text-3xl text-white">assignment</mat-icon>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900">{{ ev.titulo }}</h1>
+        <h1 class="text-2xl font-extrabold text-gray-900">{{ ev.titulo }}</h1>
         @if (ev.descripcion) {
           <p class="text-gray-500 mt-2">{{ ev.descripcion }}</p>
         }
@@ -82,10 +82,18 @@
             Ya completaste esta evaluación
           </div>
           <div>
-            <button mat-stroked-button color="primary" (click)="router.navigate(['resultado'], { relativeTo: route.parent })">
+            <button mat-stroked-button color="primary" (click)="verResultado()">
               Ver mi resultado
             </button>
           </div>
+          @if (estaAutenticado) {
+            <div>
+              <button mat-button (click)="router.navigate(['/panel-candidato/mis-evaluaciones'])" class="text-gray-500">
+                <mat-icon>arrow_back</mat-icon>
+                Volver a Mis Evaluaciones
+              </button>
+            </div>
+          }
         </div>
       } @else {
         <div class="text-center">

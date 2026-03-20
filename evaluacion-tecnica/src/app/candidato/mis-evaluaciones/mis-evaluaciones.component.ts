@@ -45,11 +45,23 @@ export class MisEvaluacionesComponent implements OnInit {
     return map[nivel] ?? 'Junior';
   }
 
+  contarPendientes(): number {
+    return this.evaluaciones().filter(e => !e.fechaInicioRespuesta).length;
+  }
+
+  contarEnProgreso(): number {
+    return this.evaluaciones().filter(e => e.fechaInicioRespuesta && !e.fechaFinRespuesta).length;
+  }
+
+  contarCompletadas(): number {
+    return this.evaluaciones().filter(e => !!e.fechaFinRespuesta).length;
+  }
+
   iniciar(token: string): void {
-    this.router.navigate(['/candidato', token]);
+    this.router.navigate(['/panel-candidato/evaluacion', token]);
   }
 
   verResultado(token: string): void {
-    this.router.navigate(['/candidato', token, 'resultado']);
+    this.router.navigate(['/panel-candidato/evaluacion', token, 'resultado']);
   }
 }

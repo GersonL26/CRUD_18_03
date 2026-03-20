@@ -8,7 +8,7 @@ public class RespuestaDto
     public int? TiempoUsadoSegundos { get; set; }
     public Guid CandidatoId { get; set; }
     public Guid PreguntaId { get; set; }
-    public double? ScoreIA { get; set; }
+    public decimal? ScoreIA { get; set; }
     public string? FeedbackIA { get; set; }
     public string? BrechasIdentificadas { get; set; }
     public DateTime CreadoEn { get; set; }

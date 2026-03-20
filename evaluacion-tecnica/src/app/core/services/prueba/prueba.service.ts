@@ -27,4 +27,18 @@ export class PruebaService {
   obtenerResultado(token: string) {
     return this.http.get<ResultadoCandidatoPublicoDto>(`${this.url}/${token}/resultado`);
   }
+
+  reportarPerdidaFoco(token: string) {
+    return this.http.post<void>(`${this.url}/${token}/focus-lost`, {});
+  }
+
+  registrarEventoProctoring(token: string, tipo: string, detalle?: string) {
+    return this.http.post<void>(`${this.url}/${token}/proctoring`, { tipo, detalle });
+  }
+
+  enviarAudio(token: string, audio: Blob) {
+    const formData = new FormData();
+    formData.append('audio', audio, 'audio.webm');
+    return this.http.post<{ transcripcion: string }>(`${this.url}/${token}/audio`, formData);
+  }
 }

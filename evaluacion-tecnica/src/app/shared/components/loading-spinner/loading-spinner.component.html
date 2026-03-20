@@ -1,1 +1,6 @@
-<p>loading-spinner works!</p>
+<div class="spinner-container">
+  <mat-spinner [diameter]="diametro()" color="primary"></mat-spinner>
+  @if (mensaje()) {
+    <p class="spinner-mensaje">{{ mensaje() }}</p>
+  }
+</div>

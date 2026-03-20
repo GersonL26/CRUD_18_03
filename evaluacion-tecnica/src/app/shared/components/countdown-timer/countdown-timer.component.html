@@ -1,1 +1,4 @@
-<p>countdown-timer works!</p>
+<div class="countdown" [class.urgente]="urgente()" [class.agotado]="agotado()">
+  <mat-icon class="timer-icon">timer</mat-icon>
+  <span class="timer-display">{{ display() }}</span>
+</div>

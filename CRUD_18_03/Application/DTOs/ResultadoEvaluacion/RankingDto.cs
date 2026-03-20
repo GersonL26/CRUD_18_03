@@ -6,7 +6,7 @@ public class RankingItemDto
     public Guid CandidatoId { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public double ScoreTotal { get; set; }
+    public decimal ScoreTotal { get; set; }
     public string Recomendacion { get; set; } = string.Empty;
     public string? TiempoInvertido { get; set; }
     public DateTime FechaAnalisis { get; set; }
@@ -19,9 +19,9 @@ public class RankingEvaluacionDto
     public string Tecnologia { get; set; } = string.Empty;
     public string Nivel { get; set; } = string.Empty;
     public int TotalAnalizados { get; set; }
-    public double? ScorePromedio { get; set; }
-    public double? ScoreMaximo { get; set; }
-    public double? ScoreMinimo { get; set; }
+    public decimal? ScorePromedio { get; set; }
+    public decimal? ScoreMaximo { get; set; }
+    public decimal? ScoreMinimo { get; set; }
     public List<RankingItemDto> Ranking { get; set; } = new();
 }
 
@@ -37,7 +37,7 @@ public class CandidatoComparadoDto
 {
     public Guid CandidatoId { get; set; }
     public string Nombre { get; set; } = string.Empty;
-    public double ScoreTotal { get; set; }
+    public decimal ScoreTotal { get; set; }
     public string Recomendacion { get; set; } = string.Empty;
     public string? TiempoInvertido { get; set; }
     public string ResumenIA { get; set; } = string.Empty;
@@ -51,5 +51,5 @@ public class ScorePorPreguntaDto
     public int OrdenEnEvaluacion { get; set; }
     public string TextoPregunta { get; set; } = string.Empty;
     public int PuntajeMaximo { get; set; }
-    public double? ScoreIA { get; set; }
+    public decimal? ScoreIA { get; set; }
 }

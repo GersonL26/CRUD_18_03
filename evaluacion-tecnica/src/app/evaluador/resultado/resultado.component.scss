@@ -1,0 +1,51 @@
+:host {
+  display: block;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-card {
+  border: none !important;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+  }
+
+  &:nth-child(1)::before { background: linear-gradient(90deg, #3b82f6, #6366f1); }
+  &:nth-child(2)::before { background: linear-gradient(90deg, #10b981, #059669); }
+  &:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #f97316); }
+
+  &:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1), 0 4px 8px rgba(0, 0, 0, 0.04) !important;
+  }
+}
+
+.detail-card {
+  border: none !important;
+  overflow: hidden;
+}
+
+.pregunta-card {
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #dbeafe;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+  }
+}

@@ -33,8 +33,6 @@ export interface ResultadoCandidatoPublicoDto {
   nivel: string;
   tituloEvaluacion: string;
   scoreTotal: number;
-  recomendacion: string;
-  resumenIA: string;
   fortalezas: string[];
   brechas: string[];
   tiempoInvertido?: string;
@@ -106,6 +104,7 @@ export interface ResumenCandidatoDto {
   estado: string;
   scoreTotal?: number;
   recomendacion?: string;
+  resultadoLiberado: boolean;
   tiempoInvertido?: string;
   fechaFinRespuesta?: string;
   fechaAnalisis?: string;

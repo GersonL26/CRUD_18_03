@@ -21,7 +21,7 @@ public class PreguntaConRespuesta
 
 public class ResultadoAnalisisIA
 {
-    public double ScoreTotal { get; set; }
+    public decimal ScoreTotal { get; set; }
     public string Recomendacion { get; set; } = string.Empty;
     public string ResumenGeneral { get; set; } = string.Empty;
     public string Brechas { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ public class ResultadoAnalisisIA
 public class ScorePorPregunta
 {
     public Guid PreguntaId { get; set; }
-    public double Score { get; set; }
+    public decimal Score { get; set; }
     public string Feedback { get; set; } = string.Empty;
     public string Brechas { get; set; } = string.Empty;
 }

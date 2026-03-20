@@ -1,0 +1,1 @@
+var stored = "$2a$11$nDFziAQ0JLqFFcZoxtxD8OX2F6dopS/4vvNCAoGuX.HE4ckXXrDc."; Console.WriteLine("Verify Admin123! => " + BCrypt.Net.BCrypt.Verify("Admin123!", stored)); Console.WriteLine("Verify admin123! => " + BCrypt.Net.BCrypt.Verify("admin123!", stored)); Console.WriteLine("Verify Password123! => " + BCrypt.Net.BCrypt.Verify("Password123!", stored));

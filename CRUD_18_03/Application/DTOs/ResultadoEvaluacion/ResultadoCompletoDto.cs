@@ -10,7 +10,7 @@ public class ResultadoCompletoDto
     public string Tecnologia { get; set; } = string.Empty;
     public string Nivel { get; set; } = string.Empty;
     public string TituloEvaluacion { get; set; } = string.Empty;
-    public double ScoreTotal { get; set; }
+    public decimal ScoreTotal { get; set; }
     public string Recomendacion { get; set; } = string.Empty;
     public string ResumenIA { get; set; } = string.Empty;
     public string BrechasDetectadas { get; set; } = string.Empty;
@@ -28,7 +28,7 @@ public class DetalleRespuestaDto
     public int PuntajeMaximo { get; set; }
     public string ContenidoRespuesta { get; set; } = string.Empty;
     public int? TiempoUsadoSegundos { get; set; }
-    public double? ScoreIA { get; set; }
+    public decimal? ScoreIA { get; set; }
     public string? FeedbackIA { get; set; }
     public string? BrechasIdentificadas { get; set; }
 }

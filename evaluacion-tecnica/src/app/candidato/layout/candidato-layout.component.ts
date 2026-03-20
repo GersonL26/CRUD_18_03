@@ -5,7 +5,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-candidato-layout',
@@ -17,15 +20,29 @@ import { AuthService } from '../../core/services/auth/auth.service';
     MatIconModule,
     MatButtonModule,
     MatListModule,
-    MatSidenavModule
+    MatSidenavModule,
+    MatTooltipModule
   ],
   templateUrl: './candidato-layout.component.html',
   styleUrl: './candidato-layout.component.scss',
 })
 export class CandidatoLayoutComponent {
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private dialog: MatDialog
+  ) {}
 
   logout(): void {
-    this.authService.logout();
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        titulo: 'Cerrar sesión',
+        mensaje: '¿Estás seguro de que deseas cerrar sesión?',
+        textoConfirmar: 'Cerrar sesión',
+        color: 'warn'
+      } as ConfirmDialogData,
+      width: '400px'
+    }).afterClosed().subscribe(result => {
+      if (result) this.authService.logout();
+    });
   }
 }

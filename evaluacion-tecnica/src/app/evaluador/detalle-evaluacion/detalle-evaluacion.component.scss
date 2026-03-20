@@ -1,0 +1,63 @@
+:host {
+  display: block;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+::ng-deep .mat-mdc-tab-group {
+  .mat-mdc-tab-header {
+    border-bottom: 2px solid #f1f5f9;
+    background: #ffffff;
+    border-radius: 14px 14px 0 0;
+    padding: 0 8px;
+  }
+
+  .mat-mdc-tab {
+    min-width: 130px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    font-size: 0.875rem;
+  }
+}
+
+table {
+  width: 100%;
+
+  th {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #64748b !important;
+    font-weight: 700 !important;
+    padding: 14px 20px !important;
+    background: #f8fafc;
+    border-bottom: 2px solid #f1f5f9;
+  }
+
+  td {
+    padding: 16px 20px !important;
+    font-size: 0.875rem;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr {
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f8fafc;
+    }
+  }
+}
+
+mat-form-field {
+  font-size: 0.875rem;
+}

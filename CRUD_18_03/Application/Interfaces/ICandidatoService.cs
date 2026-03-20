@@ -12,4 +12,5 @@ public interface ICandidatoService
     Task<EvaluacionCandidatoDto> ObtenerPorTokenAsync(string token);
     Task IniciarRespuestaAsync(string token);
     Task EnviarRespuestasAsync(string token, EnviarRespuestasDto dto);
+    Task RegistrarPerdidaFocoAsync(string token);
 }

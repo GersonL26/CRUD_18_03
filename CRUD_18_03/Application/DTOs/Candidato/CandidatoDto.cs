@@ -10,6 +10,9 @@ public class CandidatoDto
     public DateTime? FechaFinRespuesta { get; set; }
     public Guid EvaluacionId { get; set; }
     public Guid? UsuarioId { get; set; }
+    public bool TieneResultado { get; set; }
+    public bool ResultadoLiberado { get; set; }
+    public int VecesSalioFoco { get; set; }
     public DateTime CreadoEn { get; set; }
     public bool EstaActivo { get; set; }
 }

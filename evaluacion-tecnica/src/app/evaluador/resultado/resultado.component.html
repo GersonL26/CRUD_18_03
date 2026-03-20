@@ -1,1 +1,198 @@
-<p>resultado works!</p>
+@if (cargando()) {
+  <div class="flex justify-center py-20">
+    <mat-spinner diameter="36"></mat-spinner>
+  </div>
+} @else if (resultado(); as r) {
+  <div class="space-y-8">
+    <div class="flex items-center justify-between">
+      <div>
+        <button mat-button (click)="volver()" class="text-gray-500 -ml-2 mb-1">
+          <mat-icon>arrow_back</mat-icon>
+          Volver a evaluación
+        </button>
+        <p class="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Resultado</p>
+        <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ r.candidatoNombre }}</h1>
+        <p class="text-sm text-gray-400 mt-1">{{ r.tituloEvaluacion }} · {{ r.tecnologia }} · {{ r.nivel }}</p>
+      </div>
+      <button mat-flat-button (click)="descargarPdf()" [disabled]="descargando()" class="!h-11 !px-6 !font-semibold !shadow-lg"
+              style="background: linear-gradient(135deg, #1e3a5f, #3b82f6) !important; color: white;">
+        @if (descargando()) {
+          <mat-spinner diameter="18" class="inline-block"></mat-spinner>
+        } @else {
+          <mat-icon>picture_as_pdf</mat-icon>
+        }
+        Descargar PDF
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Score General</span>
+            <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <mat-icon class="text-blue-600 !text-[20px]">analytics</mat-icon>
+            </div>
+          </div>
+          <app-score-badge [score]="r.scoreTotal" size="lg" />
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Recomendación</span>
+            <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+              <mat-icon class="text-green-600 !text-[20px]">recommend</mat-icon>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">{{ r.recomendacion }}</p>
+          <p class="text-xs text-gray-400 mt-1">según análisis IA</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Tiempo</span>
+            <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
+              <mat-icon class="text-amber-600 !text-[20px]">timer</mat-icon>
+            </div>
+          </div>
+          <p class="text-2xl font-bold text-gray-900">{{ r.tiempoInvertido ?? '—' }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ r.generadoEn | date:'dd/MM/yyyy HH:mm' }}</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    @if (r.resumenIA) {
+      <mat-card class="detail-card">
+        <mat-card-content class="p-6">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6, #6366f1);">
+              <mat-icon class="text-white !text-base !w-4 !h-4">smart_toy</mat-icon>
+            </div>
+            <h3 class="text-base font-bold text-gray-900">Resumen IA</h3>
+          </div>
+          <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ r.resumenIA }}</p>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      @if (fortalezas().length > 0) {
+        <mat-card class="detail-card border-l-4 !border-l-green-500">
+          <mat-card-content class="p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-green-100 flex items-center justify-center">
+                <mat-icon class="text-green-600 !text-base !w-4 !h-4">check_circle</mat-icon>
+              </div>
+              <h3 class="font-bold text-green-800">Fortalezas</h3>
+            </div>
+            <ul class="space-y-1.5">
+              @for (f of fortalezas(); track $index) {
+                <li class="flex items-start gap-2 text-sm text-gray-700">
+                  <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-500 mt-1.5 shrink-0"></span>
+                  {{ f }}
+                </li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      @if (brechas().length > 0) {
+        <mat-card class="detail-card border-l-4 !border-l-red-500">
+          <mat-card-content class="p-5">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-7 h-7 rounded-lg bg-red-100 flex items-center justify-center">
+                <mat-icon class="text-red-600 !text-base !w-4 !h-4">error</mat-icon>
+              </div>
+              <h3 class="font-bold text-red-800">Brechas</h3>
+            </div>
+            <ul class="space-y-1.5">
+              @for (b of brechas(); track $index) {
+                <li class="flex items-start gap-2 text-sm text-gray-700">
+                  <span class="inline-block w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 shrink-0"></span>
+                  {{ b }}
+                </li>
+              }
+            </ul>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+
+    @if (chartData().labels && chartData().labels!.length > 0) {
+      <mat-card class="detail-card">
+        <mat-card-header class="px-6 pt-6 pb-4">
+          <mat-card-title class="!text-lg !font-bold !text-gray-900 !tracking-tight">Score por pregunta</mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="!px-6 !pb-6">
+          <canvas baseChart
+            type="bar"
+            [data]="chartData()"
+            [options]="chartOptions">
+          </canvas>
+        </mat-card-content>
+      </mat-card>
+    }
+
+    <mat-card class="detail-card">
+      <mat-card-header class="px-6 pt-6 pb-4">
+        <mat-card-title class="!text-lg !font-bold !text-gray-900 !tracking-tight">Detalle por pregunta</mat-card-title>
+      </mat-card-header>
+      <mat-card-content class="!px-6 !pb-6">
+        <div class="space-y-4">
+          @for (resp of r.respuestas; track resp.preguntaId; let i = $index) {
+            <div class="pregunta-card">
+              <div class="flex items-center justify-between mb-3">
+                <div class="flex items-center gap-2">
+                  <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                    {{ resp.ordenEnEvaluacion }}
+                  </span>
+                  <span class="text-sm font-semibold text-gray-900">{{ resp.textoPregunta }}</span>
+                </div>
+                <span class="text-sm font-bold whitespace-nowrap ml-3" [class]="colorScorePregunta(resp.scoreIA, resp.puntajeMaximo)">
+                  {{ resp.scoreIA ?? '—' }} / {{ resp.puntajeMaximo }}
+                </span>
+              </div>
+
+              <div class="bg-gray-50 rounded-lg p-4 mb-3">
+                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Respuesta del candidato</p>
+                <p class="text-sm text-gray-800 whitespace-pre-line leading-relaxed">{{ resp.contenidoRespuesta || '(sin respuesta)' }}</p>
+              </div>
+
+              @if (resp.feedbackIA) {
+                <div class="bg-blue-50 rounded-lg p-4">
+                  <p class="text-xs font-semibold text-blue-600 uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <mat-icon class="text-blue-500 !text-sm !w-3.5 !h-3.5">smart_toy</mat-icon>
+                    Feedback IA
+                  </p>
+                  <p class="text-sm text-blue-900 whitespace-pre-line leading-relaxed">{{ resp.feedbackIA }}</p>
+                </div>
+              }
+
+              @if (resp.tiempoUsadoSegundos) {
+                <p class="text-xs text-gray-400 mt-3 flex items-center gap-1">
+                  <mat-icon class="!text-sm !w-3.5 !h-3.5">timer</mat-icon>
+                  {{ resp.tiempoUsadoSegundos }}s
+                </p>
+              }
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+} @else {
+  <div class="flex flex-col items-center py-16 text-gray-400">
+    <mat-icon class="!text-5xl !w-12 !h-12 mb-3">assignment_late</mat-icon>
+    <p class="text-base font-medium">No se encontró resultado</p>
+    <p class="text-sm mt-1">El análisis IA aún no ha sido ejecutado para este candidato</p>
+    <button mat-stroked-button (click)="volver()" class="mt-4">
+      <mat-icon>arrow_back</mat-icon>
+      Volver
+    </button>
+  </div>
+}

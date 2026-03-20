@@ -1,1 +1,8 @@
-<p>empty-state works!</p>
+<div class="empty-state">
+  <mat-icon class="empty-icon">{{ icono() }}</mat-icon>
+  <h3 class="empty-titulo">{{ titulo() }}</h3>
+  @if (mensaje()) {
+    <p class="empty-mensaje">{{ mensaje() }}</p>
+  }
+  <ng-content></ng-content>
+</div>

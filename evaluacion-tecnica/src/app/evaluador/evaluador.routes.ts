@@ -15,6 +15,18 @@ export const EVALUADOR_ROUTES: Routes = [
         loadComponent: () => import('./crear-evaluacion/crear-evaluacion.component').then(m => m.CrearEvaluacionComponent)
       },
       {
+        path: 'resultados',
+        loadComponent: () => import('./resultados-lista/resultados-lista.component').then(m => m.ResultadosListaComponent)
+      },
+      {
+        path: 'rankings',
+        loadComponent: () => import('./rankings-lista/rankings-lista.component').then(m => m.RankingsListaComponent)
+      },
+      {
+        path: 'sesiones',
+        loadComponent: () => import('./sesiones-lista/sesiones-lista.component').then(m => m.SesionesListaComponent)
+      },
+      {
         path: 'evaluacion/:id',
         loadComponent: () => import('./detalle-evaluacion/detalle-evaluacion.component').then(m => m.DetalleEvaluacionComponent)
       },

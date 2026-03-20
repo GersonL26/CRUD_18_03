@@ -1,1 +1,188 @@
-<p>sesion-vivo-candidato works!</p>
+@if (cargando()) {
+  <div class="flex items-center justify-center h-64">
+    <mat-spinner diameter="48"></mat-spinner>
+  </div>
+} @else if (sesionCompletada()) {
+  <!-- Completed -->
+  <div class="max-w-lg mx-auto text-center py-16 animate-fadeIn">
+    <mat-card class="!rounded-2xl">
+      <mat-card-content class="py-10">
+        <mat-icon class="!text-6xl !w-16 !h-16 text-green-500 mx-auto mb-4">check_circle</mat-icon>
+        <h2 class="text-2xl font-bold text-green-700 mb-2">Entrevista Finalizada</h2>
+        <p class="text-slate-500 mb-2">
+          Has respondido {{ preguntasRespondidas() }} pregunta(s).
+        </p>
+        <p class="text-sm text-slate-400">
+          Tus respuestas serán analizadas por inteligencia artificial. Recibirás los resultados pronto.
+        </p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+} @else if (!pregunta()) {
+  <!-- Pre-start -->
+  <div class="max-w-2xl mx-auto animate-fadeIn">
+    <mat-card class="!rounded-2xl">
+      <mat-card-content class="py-8 px-6">
+        <div class="text-center mb-8">
+          <div class="mic-icon-hero mx-auto mb-4">
+            <mat-icon>mic</mat-icon>
+          </div>
+          <h2 class="text-2xl font-bold mb-2">Entrevista en Vivo</h2>
+          <p class="text-slate-500">Responderás preguntas utilizando tu micrófono. Tu voz será transcrita automáticamente.</p>
+        </div>
+
+        <!-- Requirements checklist -->
+        <div class="requirements mb-8">
+          <div class="req-item" [class.ok]="soportado()">
+            <mat-icon>{{ soportado() ? 'check_circle' : 'cancel' }}</mat-icon>
+            <span>Reconocimiento de voz {{ soportado() ? 'disponible' : 'no soportado en tu navegador' }}</span>
+          </div>
+          <div class="req-item" [class.ok]="permisoMicrofono()">
+            <mat-icon>{{ permisoMicrofono() ? 'check_circle' : 'warning' }}</mat-icon>
+            <span>Permiso de micrófono {{ permisoMicrofono() ? 'concedido' : 'pendiente' }}</span>
+          </div>
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions mb-8">
+          <h4 class="font-semibold mb-3">Instrucciones:</h4>
+          <ol class="list-decimal pl-5 text-sm text-slate-600 space-y-2">
+            <li>Asegúrate de estar en un ambiente silencioso</li>
+            <li>Las preguntas aparecerán una por una en pantalla</li>
+            <li>Al ver la pregunta, la grabación inicia automáticamente</li>
+            <li>Responde en voz alta y clara en español</li>
+            <li>Presiona <strong>"Enviar respuesta"</strong> cuando termines</li>
+            <li>La transcripción se genera en tiempo real</li>
+          </ol>
+        </div>
+
+        <div class="text-center">
+          <button mat-flat-button color="primary" class="!px-8 !py-3 !text-lg !rounded-xl"
+            (click)="iniciarSesion()"
+            [disabled]="iniciando() || !soportado()">
+            @if (iniciando()) {
+              <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+              Conectando...
+            } @else {
+              <ng-container>
+                <mat-icon>play_arrow</mat-icon>
+                Iniciar Entrevista
+              </ng-container>
+            }
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+} @else {
+  <!-- Interview in Progress -->
+  <div class="max-w-3xl mx-auto animate-fadeIn">
+    <!-- Progress bar top -->
+    <div class="mb-4">
+      <div class="flex justify-between text-xs text-slate-500 mb-1">
+        <span>Pregunta {{ pregunta()!.index + 1 }} de {{ pregunta()!.totalPreguntas }}</span>
+        <span>{{ progreso() }}% completado</span>
+      </div>
+      <mat-progress-bar mode="determinate" [value]="progreso()"></mat-progress-bar>
+    </div>
+
+    <!-- Question Card -->
+    <mat-card class="question-card !rounded-2xl mb-4">
+      <mat-card-content>
+        <div class="flex items-center justify-between mb-4">
+          <span class="question-label">Pregunta {{ pregunta()!.index + 1 }}</span>
+          @if (tiempoRestante() >= 0) {
+            <span class="timer-badge" [class.warning]="tiempoRestante() < 30" [class.danger]="tiempoRestante() < 10">
+              <mat-icon>timer</mat-icon>
+              {{ formatTiempo(tiempoRestante()) }}
+            </span>
+          } @else {
+            <span class="timer-badge neutral">
+              <mat-icon>timer</mat-icon>
+              {{ formatTiempo(segundosPregunta()) }}
+            </span>
+          }
+        </div>
+
+        <p class="question-text">{{ pregunta()!.texto }}</p>
+
+        <div class="flex gap-4 text-xs text-slate-400 mt-2">
+          <span>Puntaje máximo: {{ pregunta()!.puntajeMaximo }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recording Panel -->
+    <mat-card class="recording-card !rounded-2xl mb-4">
+      <mat-card-content>
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-3">
+            @if (grabando()) {
+              <div class="recording-indicator">
+                <div class="rec-dot"></div>
+                <span class="text-red-600 font-semibold text-sm">GRABANDO</span>
+              </div>
+            } @else {
+              <span class="text-slate-400 text-sm">Micrófono inactivo</span>
+            }
+          </div>
+        </div>
+
+        <!-- Audio Level Visualizer -->
+        @if (grabando()) {
+          <div class="audio-visualizer mb-4">
+            <div class="level-bar-container">
+              @for (i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]; track i) {
+                <div class="level-bar"
+                  [style.height.%]="nivelAudio() > (i * 6.66) ? 30 + (nivelAudio() - (i * 6.66)) * 0.7 : 15"
+                  [class.active]="nivelAudio() > (i * 6.66)">
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Transcription Display -->
+        <div class="transcription-box">
+          <label class="text-xs text-slate-500 uppercase font-semibold mb-1 block">Transcripción en tiempo real</label>
+          <div class="transcript-content">
+            @if (transcripcionFinal() || transcripcionParcial()) {
+              <span>{{ transcripcionFinal() }}</span>
+              @if (transcripcionParcial()) {
+                <span class="partial"> {{ transcripcionParcial() }}</span>
+              }
+            } @else if (grabando()) {
+              <span class="text-slate-400 italic">Habla ahora... tu respuesta aparecerá aquí</span>
+            } @else {
+              <span class="text-slate-400 italic">Presiona grabar para comenzar</span>
+            }
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-between">
+      <button mat-stroked-button color="warn"
+        (click)="finalizarSesion()"
+        [disabled]="respondiendo()">
+        <mat-icon>stop</mat-icon>
+        Finalizar Entrevista
+      </button>
+
+      <button mat-flat-button color="primary" class="!px-6 !py-2 !rounded-xl"
+        (click)="enviarRespuesta()"
+        [disabled]="respondiendo()">
+        @if (respondiendo()) {
+          <mat-spinner diameter="20" class="inline-spinner"></mat-spinner>
+          Enviando...
+        } @else {
+          <ng-container>
+            <mat-icon>send</mat-icon>
+            Enviar Respuesta
+          </ng-container>
+        }
+      </button>
+    </div>
+  </div>
+}

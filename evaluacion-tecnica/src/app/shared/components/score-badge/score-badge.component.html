@@ -1,1 +1,4 @@
-<p>score-badge works!</p>
+<div class="score-badge" [class]="categoria() + ' ' + size()">
+  <mat-icon class="score-icon">{{ icono() }}</mat-icon>
+  <span class="score-value">{{ score() }}</span>
+</div>

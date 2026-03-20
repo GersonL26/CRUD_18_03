@@ -17,6 +17,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Respuesta> Respuestas => Set<Respuesta>();
     public DbSet<ResultadoEvaluacion> ResultadosEvaluacion => Set<ResultadoEvaluacion>();
     public DbSet<SesionEnVivo> SesionesEnVivo => Set<SesionEnVivo>();
+    public DbSet<EventoProctoring> EventosProctoring => Set<EventoProctoring>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -113,6 +114,22 @@ public class ApplicationDbContext : DbContext
                   .WithMany()
                   .HasForeignKey(e => e.CandidatoId)
                   .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<EventoProctoring>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Tipo).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Detalle).HasMaxLength(4000);
+            entity.HasOne(e => e.Candidato)
+                  .WithMany()
+                  .HasForeignKey(e => e.CandidatoId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasOne(e => e.Evaluacion)
+                  .WithMany()
+                  .HasForeignKey(e => e.EvaluacionId)
+                  .OnDelete(DeleteBehavior.Restrict);
+            entity.HasIndex(e => new { e.CandidatoId, e.EvaluacionId });
         });
     }
 }

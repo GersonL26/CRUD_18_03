@@ -15,8 +15,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Clipboard } from '@angular/cdk/clipboard';
 import { EvaluacionService } from '../../core/services/evaluacion/evaluacion.service';
 import { CandidatoService } from '../../core/services/candidato/candidato.service';
+import { ResultadoService } from '../../core/services/resultado/resultado.service';
+import { SesionService } from '../../core/services/sesion/sesion.service';
 import { EvaluacionConPreguntasDto, PreguntaDto, EstadoEvaluacion, NivelTecnico, TipoPregunta } from '../../core/models/evaluacion.model';
 import { CandidatoDto, UsuarioResumenDto } from '../../core/models/candidato.model';
 
@@ -49,6 +52,9 @@ export class DetalleEvaluacionComponent implements OnInit {
   guardandoInfo = signal(false);
   agregandoPregunta = signal(false);
   asignando = signal(false);
+  analizandoId = signal<string | null>(null);
+  liberandoId = signal<string | null>(null);
+  creandoSesionId = signal<string | null>(null);
 
   esBorrador = () => this.evaluacion()?.estado === EstadoEvaluacion.Borrador;
   esActiva = () => this.evaluacion()?.estado === EstadoEvaluacion.Activa;
@@ -82,6 +88,9 @@ export class DetalleEvaluacionComponent implements OnInit {
     private router: Router,
     private evaluacionService: EvaluacionService,
     private candidatoService: CandidatoService,
+    private resultadoService: ResultadoService,
+    private sesionService: SesionService,
+    private clipboard: Clipboard,
     private snackBar: MatSnackBar
   ) {
     this.infoForm = this.fb.group({
@@ -237,6 +246,46 @@ export class DetalleEvaluacionComponent implements OnInit {
     });
   }
 
+  analizarCandidato(candidatoId: string): void {
+    this.analizandoId.set(candidatoId);
+    this.resultadoService.ejecutarAnalisis(candidatoId).subscribe({
+      next: () => {
+        this.snackBar.open('Análisis IA completado', 'OK', { duration: 3000 });
+        this.analizandoId.set(null);
+        this.candidatoService.listar(this.evaluacionId).subscribe({
+          next: data => this.candidatos.set(data)
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al ejecutar análisis IA';
+        this.snackBar.open(typeof msg === 'string' ? msg : 'Error en análisis', 'Cerrar', { duration: 5000 });
+        this.analizandoId.set(null);
+      }
+    });
+  }
+
+  liberarResultado(candidatoId: string): void {
+    this.liberandoId.set(candidatoId);
+    this.resultadoService.liberarResultado(candidatoId).subscribe({
+      next: () => {
+        this.snackBar.open('Resultado liberado para el candidato', 'OK', { duration: 3000 });
+        this.liberandoId.set(null);
+        this.candidatoService.listar(this.evaluacionId).subscribe({
+          next: data => this.candidatos.set(data)
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al liberar resultado';
+        this.snackBar.open(typeof msg === 'string' ? msg : 'Error', 'Cerrar', { duration: 5000 });
+        this.liberandoId.set(null);
+      }
+    });
+  }
+
+  verResultado(candidatoId: string): void {
+    this.router.navigate(['/evaluador/evaluacion', this.evaluacionId, 'resultado', candidatoId]);
+  }
+
   activar(): void {
     this.evaluacionService.activar(this.evaluacionId).subscribe({
       next: () => {
@@ -270,6 +319,29 @@ export class DetalleEvaluacionComponent implements OnInit {
       next: () => {
         this.snackBar.open('Evaluación eliminada', 'OK', { duration: 2000 });
         this.router.navigate(['/evaluador/dashboard']);
+      }
+    });
+  }
+
+  crearSesionVivo(candidato: CandidatoDto): void {
+    this.creandoSesionId.set(candidato.id);
+    this.sesionService.crear({
+      evaluacionId: this.evaluacionId,
+      candidatoId: candidato.id
+    }).subscribe({
+      next: (estado) => {
+        this.creandoSesionId.set(null);
+        // Copy candidate link to clipboard
+        const candidateUrl = `${window.location.origin}/candidato/${candidato.token}/sesion-vivo/${estado.sesionId}`;
+        this.clipboard.copy(candidateUrl);
+        this.snackBar.open('Sesión creada. Enlace del candidato copiado al portapapeles.', 'OK', { duration: 5000 });
+        // Navigate to evaluador's live panel
+        this.router.navigate(['/evaluador/evaluacion', this.evaluacionId, 'sesion-vivo', estado.sesionId]);
+      },
+      error: (err) => {
+        const msg = err?.error?.message || 'Error al crear sesión en vivo';
+        this.snackBar.open(typeof msg === 'string' ? msg : 'Error', 'Cerrar', { duration: 5000 });
+        this.creandoSesionId.set(null);
       }
     });
   }

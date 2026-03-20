@@ -138,7 +138,7 @@ public class AnalizadorPowerAutomate : IAnalizadorIA
     // DTOs internos para deserializar respuestas de Power Automate
     private class RespuestaIAPregunta
     {
-        public double Score { get; set; }
+        public decimal Score { get; set; }
         public string Justificacion { get; set; } = string.Empty;
         public string Brechas { get; set; } = string.Empty;
     }

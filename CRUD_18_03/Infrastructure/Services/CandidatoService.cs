@@ -64,6 +64,7 @@ public class CandidatoService : ICandidatoService
             throw new UnauthorizedAccessException("No tiene permiso para acceder a esta evaluación.");
 
         var candidatos = await _dbContext.Candidatos
+            .Include(c => c.Resultado)
             .Where(c => c.EvaluacionId == evaluacionId && c.EstaActivo)
             .AsNoTracking()
             .OrderByDescending(c => c.CreadoEn)
@@ -204,6 +205,19 @@ public class CandidatoService : ICandidatoService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task RegistrarPerdidaFocoAsync(string token)
+    {
+        var candidato = await _dbContext.Candidatos
+            .FirstOrDefaultAsync(c => c.Token == token && c.EstaActivo)
+            ?? throw new KeyNotFoundException("Token de candidato inválido.");
+
+        if (candidato.FechaFinRespuesta.HasValue) return;
+
+        candidato.VecesSalioFoco++;
+        candidato.ModificadoEn = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+    }
+
     // --- Helpers ---
 
     private static CandidatoDto MapToDto(Candidato c) => new()
@@ -216,6 +230,9 @@ public class CandidatoService : ICandidatoService
         FechaFinRespuesta = c.FechaFinRespuesta,
         EvaluacionId = c.EvaluacionId,
         UsuarioId = c.UsuarioId,
+        TieneResultado = c.Resultado is not null,
+        ResultadoLiberado = c.Resultado?.ResultadoLiberado ?? false,
+        VecesSalioFoco = c.VecesSalioFoco,
         CreadoEn = c.CreadoEn,
         EstaActivo = c.EstaActivo
     };

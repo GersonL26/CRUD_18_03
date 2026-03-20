@@ -1,0 +1,143 @@
+<div class="space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs font-semibold text-amber-600 uppercase tracking-widest mb-1">Competencia</p>
+      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Rankings por Evaluación</h1>
+      <p class="text-sm text-gray-400 mt-1">Clasificación de candidatos por evaluación técnica</p>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <app-loading-spinner mensaje="Cargando evaluaciones..." />
+  } @else if (evaluaciones().length === 0) {
+    <app-empty-state
+      icono="emoji_events"
+      titulo="No hay rankings disponibles"
+      mensaje="Los rankings se generan cuando hay candidatos analizados en evaluaciones activas o cerradas." />
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Evaluaciones</span>
+            <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <mat-icon class="text-blue-600 !text-[20px]">quiz</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ evaluacionesFiltradas().length }}</p>
+          <p class="text-xs text-gray-400 mt-1">con ranking disponible</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Activas</span>
+            <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+              <mat-icon class="text-green-600 !text-[20px]">play_circle</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ contarPorEstado(2) }}</p>
+          <p class="text-xs text-gray-400 mt-1">recibiendo respuestas</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Cerradas</span>
+            <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
+              <mat-icon class="text-amber-600 !text-[20px]">lock</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ contarPorEstado(3) }}</p>
+          <p class="text-xs text-gray-400 mt-1">finalizadas</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Filters -->
+    <mat-card class="filter-card">
+      <mat-card-content>
+        <div class="flex flex-wrap gap-3 items-end">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Buscar</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [ngModel]="filtroTexto()" (ngModelChange)="filtroTexto.set($event)" placeholder="Título o tecnología...">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Tecnología</mat-label>
+            <mat-select [ngModel]="filtroTecnologia()" (ngModelChange)="filtroTecnologia.set($event)">
+              <mat-option value="">Todas</mat-option>
+              @for (tec of tecnologias(); track tec) {
+                <mat-option [value]="tec">{{ tec }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Nivel</mat-label>
+            <mat-select [ngModel]="filtroNivel()" (ngModelChange)="filtroNivel.set($event)">
+              <mat-option [value]="0">Todos</mat-option>
+              <mat-option [value]="1">Junior</mat-option>
+              <mat-option [value]="2">Mid</mat-option>
+              <mat-option [value]="3">Senior</mat-option>
+              <mat-option [value]="4">Lead</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-icon-button matTooltip="Limpiar filtros" (click)="limpiarFiltros()">
+            <mat-icon>filter_alt_off</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="table-card">
+      <mat-card-header class="px-6 pt-6 pb-4">
+        <mat-card-title class="!text-lg !font-bold !text-gray-900 !tracking-tight">Evaluaciones</mat-card-title>
+        <span class="text-xs text-slate-400 ml-2">({{ evaluacionesFiltradas().length }})</span>
+      </mat-card-header>
+      <mat-card-content class="!px-0 !pb-0">
+        <table mat-table [dataSource]="evaluacionesFiltradas()" class="w-full">
+          <ng-container matColumnDef="titulo">
+            <th mat-header-cell *matHeaderCellDef class="!font-semibold">Evaluación</th>
+            <td mat-cell *matCellDef="let e" class="!font-medium">{{ e.titulo }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="tecnologia">
+            <th mat-header-cell *matHeaderCellDef class="!font-semibold">Tecnología</th>
+            <td mat-cell *matCellDef="let e">{{ e.tecnologia }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="nivel">
+            <th mat-header-cell *matHeaderCellDef class="!font-semibold">Nivel</th>
+            <td mat-cell *matCellDef="let e">{{ e.nivel | nivelBadge }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="estado">
+            <th mat-header-cell *matHeaderCellDef class="!font-semibold">Estado</th>
+            <td mat-cell *matCellDef="let e">
+              <mat-chip [highlighted]="e.estado === 2">{{ estadoLabel(e.estado) }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="acciones">
+            <th mat-header-cell *matHeaderCellDef class="!font-semibold">Acciones</th>
+            <td mat-cell *matCellDef="let e">
+              <button mat-flat-button class="!bg-amber-100 !text-amber-800" (click)="verRanking(e.id)">
+                <mat-icon>emoji_events</mat-icon>
+                Ver Ranking
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+          <tr mat-row *matRowDef="let row; columns: columnas"
+              class="hover:bg-gray-50 cursor-pointer transition-colors"></tr>
+        </table>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

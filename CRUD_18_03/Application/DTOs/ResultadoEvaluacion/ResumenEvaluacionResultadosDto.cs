@@ -6,8 +6,9 @@ public class ResumenCandidatoDto
     public string Nombre { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Estado { get; set; } = string.Empty;
-    public double? ScoreTotal { get; set; }
+    public decimal? ScoreTotal { get; set; }
     public string? Recomendacion { get; set; }
+    public bool ResultadoLiberado { get; set; }
     public string? TiempoInvertido { get; set; }
     public DateTime? FechaFinRespuesta { get; set; }
     public DateTime? FechaAnalisis { get; set; }
@@ -22,6 +23,6 @@ public class ResumenEvaluacionResultadosDto
     public int TotalCandidatos { get; set; }
     public int CandidatosRespondieron { get; set; }
     public int CandidatosAnalizados { get; set; }
-    public double? ScorePromedio { get; set; }
+    public decimal? ScorePromedio { get; set; }
     public List<ResumenCandidatoDto> Candidatos { get; set; } = new();
 }

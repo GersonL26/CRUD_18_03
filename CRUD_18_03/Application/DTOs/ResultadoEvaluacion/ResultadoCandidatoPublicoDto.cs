@@ -6,9 +6,7 @@ public class ResultadoCandidatoPublicoDto
     public string Tecnologia { get; set; } = string.Empty;
     public string Nivel { get; set; } = string.Empty;
     public string TituloEvaluacion { get; set; } = string.Empty;
-    public double ScoreTotal { get; set; }
-    public string Recomendacion { get; set; } = string.Empty;
-    public string ResumenIA { get; set; } = string.Empty;
+    public decimal ScoreTotal { get; set; }
     public List<string> Fortalezas { get; set; } = new();
     public List<string> Brechas { get; set; } = new();
     public string? TiempoInvertido { get; set; }
@@ -21,6 +19,6 @@ public class DetallePreguntaPublicoDto
     public int OrdenEnEvaluacion { get; set; }
     public string TextoPregunta { get; set; } = string.Empty;
     public int PuntajeMaximo { get; set; }
-    public double? ScoreIA { get; set; }
+    public decimal? ScoreIA { get; set; }
     public string? FeedbackIA { get; set; }
 }
