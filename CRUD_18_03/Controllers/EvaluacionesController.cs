@@ -30,7 +30,8 @@ public class EvaluacionesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Listar()
     {
-        var evaluadorId = ObtenerUsuarioId();
+        // Admin ve todas; Evaluador solo las propias
+        var evaluadorId = User.IsInRole("Admin") ? Guid.Empty : ObtenerUsuarioId();
         var evaluaciones = await _evaluacionService.ListarPorEvaluadorAsync(evaluadorId);
         return Ok(evaluaciones);
     }

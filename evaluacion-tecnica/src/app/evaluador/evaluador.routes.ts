@@ -27,6 +27,10 @@ export const EVALUADOR_ROUTES: Routes = [
         loadComponent: () => import('./sesiones-lista/sesiones-lista.component').then(m => m.SesionesListaComponent)
       },
       {
+        path: 'usuarios',
+        loadComponent: () => import('./gestion-usuarios/gestion-usuarios.component').then(m => m.GestionUsuariosComponent)
+      },
+      {
         path: 'evaluacion/:id',
         loadComponent: () => import('./detalle-evaluacion/detalle-evaluacion.component').then(m => m.DetalleEvaluacionComponent)
       },

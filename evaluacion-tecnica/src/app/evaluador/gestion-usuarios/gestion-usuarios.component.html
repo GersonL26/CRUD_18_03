@@ -1,0 +1,161 @@
+<div class="space-y-8">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs font-semibold text-blue-600 uppercase tracking-widest mb-1">Administración</p>
+      <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">Gestionar Usuarios</h1>
+      <p class="text-sm text-gray-400 mt-1">Administra roles y estado de los usuarios del sistema</p>
+    </div>
+  </div>
+
+  @if (cargando()) {
+    <app-loading-spinner mensaje="Cargando usuarios..." />
+  } @else if (usuarios().length === 0) {
+    <app-empty-state
+      icono="group"
+      titulo="No hay usuarios registrados"
+      mensaje="Los usuarios aparecerán aquí cuando se registren en la plataforma." />
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Total Usuarios</span>
+            <div class="w-9 h-9 rounded-lg bg-blue-100 flex items-center justify-center">
+              <mat-icon class="text-blue-600 !text-[20px]">group</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ usuarios().length }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ totalActivos() }} activos</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Evaluadores</span>
+            <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center">
+              <mat-icon class="text-indigo-600 !text-[20px]">school</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ totalEvaluadores() }}</p>
+          <p class="text-xs text-gray-400 mt-1">con rol evaluador</p>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <mat-card-content class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium text-gray-600">Candidatos</span>
+            <div class="w-9 h-9 rounded-lg bg-green-100 flex items-center justify-center">
+              <mat-icon class="text-green-600 !text-[20px]">person</mat-icon>
+            </div>
+          </div>
+          <p class="text-3xl font-bold text-gray-900">{{ totalCandidatos() }}</p>
+          <p class="text-xs text-gray-400 mt-1">con rol candidato</p>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <mat-card class="filter-card">
+      <mat-card-content class="!px-5 !py-4">
+        <div class="flex flex-wrap gap-3 items-end">
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Buscar usuario</mat-label>
+            <mat-icon matPrefix>search</mat-icon>
+            <input matInput [ngModel]="filtroTexto()" (ngModelChange)="filtroTexto.set($event)" placeholder="Nombre o email...">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Rol</mat-label>
+            <mat-select [ngModel]="filtroRol()" (ngModelChange)="filtroRol.set($event)">
+              <mat-option value="">Todos</mat-option>
+              @for (r of roles; track r.value) {
+                <mat-option [value]="r.value">{{ r.label }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-icon-button matTooltip="Limpiar filtros" (click)="limpiarFiltros()" class="!text-gray-400">
+            <mat-icon>filter_alt_off</mat-icon>
+          </button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="table-card">
+      <mat-card-header class="px-6 pt-6 pb-4">
+        <mat-card-title class="!text-lg !font-bold !text-gray-900 !tracking-tight">Usuarios</mat-card-title>
+        <span class="text-xs text-gray-400 ml-2 self-end mb-1">{{ usuariosFiltrados().length }} usuario(s)</span>
+      </mat-card-header>
+
+      <table mat-table [dataSource]="usuariosFiltrados()" class="w-full">
+        <ng-container matColumnDef="nombre">
+          <th mat-header-cell *matHeaderCellDef>Usuario</th>
+          <td mat-cell *matCellDef="let u">
+            <div class="flex items-center gap-3">
+              <div class="user-avatar" [class]="getRol(u.rol).color">
+                <mat-icon>{{ getRol(u.rol).icon }}</mat-icon>
+              </div>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm">{{ u.nombreCompleto }}</p>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let u">
+            <span class="text-sm text-gray-500">{{ u.email }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="rol">
+          <th mat-header-cell *matHeaderCellDef>Rol</th>
+          <td mat-cell *matCellDef="let u">
+            <mat-form-field appearance="outline" class="role-select">
+              <mat-select [value]="u.rol" (selectionChange)="cambiarRol(u, $event.value)">
+                @for (r of roles; track r.value) {
+                  <mat-option [value]="r.value">{{ r.label }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Registrado</th>
+          <td mat-cell *matCellDef="let u">
+            <span class="text-sm text-gray-400">{{ u.creadoEn | date:'dd/MM/yyyy' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let u">
+            <span class="status-chip" [class.active]="u.estaActivo" [class.inactive]="!u.estaActivo">
+              {{ u.estaActivo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef class="text-center">Acciones</th>
+          <td mat-cell *matCellDef="let u" class="text-center">
+            <button mat-icon-button
+              [matTooltip]="u.estaActivo ? 'Desactivar usuario' : 'Activar usuario'"
+              (click)="toggleActivo(u)"
+              [class.text-green-600]="!u.estaActivo"
+              [class.text-red-500]="u.estaActivo">
+              <mat-icon>{{ u.estaActivo ? 'person_off' : 'person_add' }}</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnas;"
+            [class.opacity-50]="!row.estaActivo"></tr>
+      </table>
+    </mat-card>
+  }
+</div>

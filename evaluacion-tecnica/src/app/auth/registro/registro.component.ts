@@ -4,7 +4,6 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -20,7 +19,6 @@ import { RolUsuario } from '../../core/models/auth.model';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule
@@ -34,11 +32,6 @@ export class RegistroComponent {
   cargando = signal(false);
   form;
 
-  roles = [
-    { value: RolUsuario.Evaluador, label: 'Evaluador' },
-    { value: RolUsuario.Candidato, label: 'Candidato' }
-  ];
-
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
@@ -48,7 +41,6 @@ export class RegistroComponent {
     this.form = this.fb.group({
       nombreCompleto: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
-      rol: [RolUsuario.Candidato, [Validators.required]],
       password: ['', [Validators.required, Validators.minLength(6)]],
       confirmarPassword: ['', [Validators.required]]
     }, { validators: this.passwordsMatch });
@@ -58,13 +50,13 @@ export class RegistroComponent {
     if (this.form.invalid) return;
 
     this.cargando.set(true);
-    const { nombreCompleto, email, password, rol } = this.form.getRawValue();
+    const { nombreCompleto, email, password } = this.form.getRawValue();
 
     this.authService.registro({
       nombreCompleto: nombreCompleto!,
       email: email!,
       password: password!,
-      rol: rol!
+      rol: RolUsuario.Candidato
     }).subscribe({
       next: () => {
         this.snackBar.open('Cuenta creada exitosamente', 'Cerrar', {

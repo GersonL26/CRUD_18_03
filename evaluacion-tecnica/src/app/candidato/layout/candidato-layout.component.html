@@ -1,5 +1,5 @@
 <div class="layout-container">
-  <mat-toolbar>
+  <mat-toolbar class="toolbar">
     <div class="logo">
       <div class="logo-icon">
         <mat-icon>psychology</mat-icon>
@@ -14,16 +14,39 @@
   </mat-toolbar>
 
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav opened mode="side">
+    <mat-sidenav opened mode="side" class="sidenav">
+
+      <div class="sidebar-user">
+        <div class="avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="user-info">
+          <span class="name">{{ authService.nombreCompleto() }}</span>
+          <span class="role">Candidato</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
       <mat-nav-list class="nav-list">
-        <a mat-list-item routerLink="mis-evaluaciones" routerLinkActive="active-link">
-          <mat-icon matListItemIcon>assignment</mat-icon>
-          <span matListItemTitle>Mis Evaluaciones</span>
-        </a>
+        <div class="nav-section-label">Panel</div>
+        <div class="nav-section">
+          <a mat-list-item routerLink="mis-evaluaciones" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>assignment</mat-icon>
+            <span matListItemTitle>Mis Evaluaciones</span>
+          </a>
+        </div>
       </mat-nav-list>
+
+      <div class="sidebar-footer">
+        <button mat-button class="logout-sidebar-btn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
     </mat-sidenav>
 
-    <mat-sidenav-content>
+    <mat-sidenav-content class="main-content">
       <router-outlet />
     </mat-sidenav-content>
   </mat-sidenav-container>

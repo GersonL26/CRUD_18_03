@@ -53,15 +53,6 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="w-full">
-          <mat-label>Rol</mat-label>
-          <mat-select formControlName="rol">
-            @for (r of roles; track r.value) {
-              <mat-option [value]="r.value">{{ r.label }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="w-full">
           <mat-label>Contraseña</mat-label>
           <input matInput formControlName="password"
             [type]="ocultarPassword() ? 'password' : 'text'"

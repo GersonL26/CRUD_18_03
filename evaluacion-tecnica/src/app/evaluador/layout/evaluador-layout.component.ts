@@ -5,7 +5,10 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog } from '@angular/material/dialog';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { ConfirmDialogComponent, ConfirmDialogData } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-evaluador-layout',
@@ -17,7 +20,8 @@ import { AuthService } from '../../core/services/auth/auth.service';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    MatTooltipModule
   ],
   templateUrl: './evaluador-layout.component.html',
   styleUrl: './evaluador-layout.component.scss',
@@ -25,13 +29,26 @@ import { AuthService } from '../../core/services/auth/auth.service';
 export class EvaluadorLayoutComponent {
   sidenavAbierto = signal(true);
 
-  constructor(public authService: AuthService) {}
+  constructor(
+    public authService: AuthService,
+    private dialog: MatDialog
+  ) {}
 
   toggleSidenav(): void {
     this.sidenavAbierto.update(v => !v);
   }
 
   logout(): void {
-    this.authService.logout();
+    this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        titulo: 'Cerrar sesión',
+        mensaje: '¿Estás seguro de que deseas cerrar sesión?',
+        textoConfirmar: 'Cerrar sesión',
+        color: 'warn'
+      } as ConfirmDialogData,
+      width: '400px'
+    }).afterClosed().subscribe(result => {
+      if (result) this.authService.logout();
+    });
   }
 }

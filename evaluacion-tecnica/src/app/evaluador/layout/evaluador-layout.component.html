@@ -21,42 +21,67 @@
       [opened]="sidenavAbierto()"
       mode="side"
       class="sidenav">
+
+      <div class="sidebar-user">
+        <div class="avatar">
+          <mat-icon>person</mat-icon>
+        </div>
+        <div class="user-info">
+          <span class="name">{{ authService.nombreCompleto() }}</span>
+          <span class="role">Evaluador</span>
+        </div>
+      </div>
+
+      <div class="sidebar-divider"></div>
+
       <mat-nav-list class="nav-list">
+        <div class="nav-section-label">Principal</div>
         <div class="nav-section">
           <a mat-list-item routerLink="dashboard" routerLinkActive="active-link">
-            <mat-icon matListItemIcon>dashboard</mat-icon>
+            <mat-icon matListItemIcon>space_dashboard</mat-icon>
             <span matListItemTitle>Dashboard</span>
           </a>
           <a mat-list-item routerLink="crear" routerLinkActive="active-link">
-            <mat-icon matListItemIcon>add_circle</mat-icon>
+            <mat-icon matListItemIcon>add_circle_outline</mat-icon>
             <span matListItemTitle>Nueva Evaluación</span>
           </a>
         </div>
 
-        <div class="nav-divider">
-          <span class="nav-section-label">Resultados</span>
-        </div>
+        <div class="nav-section-label">Análisis</div>
         <div class="nav-section">
           <a mat-list-item routerLink="resultados" routerLinkActive="active-link">
             <mat-icon matListItemIcon>analytics</mat-icon>
             <span matListItemTitle>Resultados</span>
           </a>
           <a mat-list-item routerLink="rankings" routerLinkActive="active-link">
-            <mat-icon matListItemIcon>leaderboard</mat-icon>
+            <mat-icon matListItemIcon>emoji_events</mat-icon>
             <span matListItemTitle>Rankings</span>
           </a>
         </div>
 
-        <div class="nav-divider">
-          <span class="nav-section-label">En Vivo</span>
-        </div>
+        <div class="nav-section-label">En Vivo</div>
         <div class="nav-section">
           <a mat-list-item routerLink="sesiones" routerLinkActive="active-link">
             <mat-icon matListItemIcon>videocam</mat-icon>
             <span matListItemTitle>Sesiones en Vivo</span>
           </a>
         </div>
+
+        <div class="nav-section-label">Administración</div>
+        <div class="nav-section">
+          <a mat-list-item routerLink="usuarios" routerLinkActive="active-link">
+            <mat-icon matListItemIcon>group</mat-icon>
+            <span matListItemTitle>Gestionar Usuarios</span>
+          </a>
+        </div>
       </mat-nav-list>
+
+      <div class="sidebar-footer">
+        <button mat-button class="logout-sidebar-btn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
     </mat-sidenav>
 
     <mat-sidenav-content class="main-content">

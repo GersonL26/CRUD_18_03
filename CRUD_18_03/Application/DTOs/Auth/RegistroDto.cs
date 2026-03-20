@@ -18,5 +18,5 @@ public class RegistroDto
     [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres.")]
     public string Password { get; set; } = string.Empty;
 
-    public RolUsuario Rol { get; set; } = RolUsuario.Evaluador;
+    public RolUsuario Rol { get; set; } = RolUsuario.Candidato;
 }

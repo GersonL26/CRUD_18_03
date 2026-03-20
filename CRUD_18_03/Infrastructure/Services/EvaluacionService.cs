@@ -61,8 +61,9 @@ public class EvaluacionService : IEvaluacionService
 
     public async Task<IEnumerable<EvaluacionDto>> ListarPorEvaluadorAsync(Guid evaluadorId)
     {
+        // Guid.Empty indica Admin: retorna todas las evaluaciones activas
         var evaluaciones = await _dbContext.Evaluaciones
-            .Where(e => e.EvaluadorId == evaluadorId && e.EstaActivo)
+            .Where(e => (evaluadorId == Guid.Empty || e.EvaluadorId == evaluadorId) && e.EstaActivo)
             .AsNoTracking()
             .OrderByDescending(e => e.CreadoEn)
             .ToListAsync();
