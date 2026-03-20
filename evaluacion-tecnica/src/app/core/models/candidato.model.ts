@@ -1,3 +1,13 @@
+export interface RespuestaCrudaDto {
+  orden: number;
+  pregunta: string;
+  tipo: number;
+  puntajeMaximo: number;
+  contenido?: string;
+  tiempoUsadoSegundos?: number;
+  fechaRespuesta?: string;
+}
+
 export interface CandidatoDto {
   id: string;
   nombre: string;

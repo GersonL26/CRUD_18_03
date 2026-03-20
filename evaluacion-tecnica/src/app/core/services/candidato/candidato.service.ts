@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.development';
-import { AsignarCandidatoDto, CandidatoDto, EvaluacionAsignadaDto, UsuarioResumenDto } from '../../models/candidato.model';
+import { AsignarCandidatoDto, CandidatoDto, EvaluacionAsignadaDto, RespuestaCrudaDto, UsuarioResumenDto } from '../../models/candidato.model';
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +25,12 @@ export class CandidatoService {
 
   listarUsuariosCandidatos(evaluacionId: string) {
     return this.http.get<UsuarioResumenDto[]>(`${this.baseUrl}/evaluaciones/${evaluacionId}/candidatos/usuarios-candidatos`);
+  }
+
+  obtenerRespuestasCrudas(evaluacionId: string, candidatoId: string) {
+    return this.http.get<RespuestaCrudaDto[]>(
+      `${this.baseUrl}/evaluaciones/${evaluacionId}/candidatos/${candidatoId}/respuestas`
+    );
   }
 
   misEvaluaciones() {

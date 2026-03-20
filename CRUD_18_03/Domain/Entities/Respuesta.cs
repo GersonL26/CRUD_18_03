@@ -5,6 +5,7 @@ public class Respuesta : BaseEntity
     public string Contenido { get; set; } = string.Empty;
     public DateTime Timestamp { get; set; } = DateTime.UtcNow;
     public int? TiempoUsadoSegundos { get; set; }
+    public string? AudioUrl { get; set; }
     public Guid CandidatoId { get; set; }
     public Guid PreguntaId { get; set; }
 

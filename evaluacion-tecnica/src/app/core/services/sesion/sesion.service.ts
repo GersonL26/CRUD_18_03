@@ -54,6 +54,16 @@ export class SesionService {
     );
   }
 
+  subirAudio(sesionId: string, preguntaId: string, audioBlob: Blob, token: string) {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'grabacion.webm');
+    return this.http.post(
+      `${this.vivoUrl}/${sesionId}/audio/${preguntaId}`,
+      formData,
+      { headers: { 'X-Candidato-Token': token } }
+    );
+  }
+
   // Evaluator-driven (in-person interview)
   iniciarPorEvaluador(sesionId: string) {
     return this.http.post<PreguntaEnVivoDto>(`${this.url}/${sesionId}/iniciar`, {});
@@ -77,5 +87,9 @@ export class SesionService {
 
   finalizarPorEvaluador(sesionId: string) {
     return this.http.post<{ message: string }>(`${this.url}/${sesionId}/finalizar`, {});
+  }
+
+  cancelarPorEvaluador(sesionId: string) {
+    return this.http.post<{ message: string }>(`${this.url}/${sesionId}/cancelar`, {});
   }
 }

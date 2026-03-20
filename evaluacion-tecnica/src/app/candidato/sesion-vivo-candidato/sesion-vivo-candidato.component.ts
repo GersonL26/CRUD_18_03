@@ -29,6 +29,9 @@ export class SesionVivoCandidatoComponent implements OnInit, OnDestroy {
   permisoMicrofono = signal(false);
   segundosPregunta = signal(0);
   preguntasRespondidas = signal(0);
+  grabacionDetenida = signal(false);
+  audioBlob = signal<Blob | null>(null);
+  textoRespuesta = signal('');
 
   private audioService = inject(AudioTranscripcionService);
   private sesionService = inject(SesionService);
@@ -127,10 +130,28 @@ export class SesionVivoCandidatoComponent implements OnInit, OnDestroy {
   async iniciarGrabacion(): Promise<void> {
     try {
       this.audioService.resetear();
+      this.grabacionDetenida.set(false);
+      this.audioBlob.set(null);
+      this.textoRespuesta.set('');
       await this.audioService.iniciarGrabacion('es-ES');
     } catch {
       this.snackBar.open('No se pudo acceder al micrófono', 'OK', { duration: 3000 });
     }
+  }
+
+  async detenerGrabacion(): Promise<void> {
+    if (!this.grabando()) return;
+    const { texto, audioBlob } = await this.audioService.detenerGrabacion();
+    this.textoRespuesta.set(texto || '');
+    this.audioBlob.set(audioBlob);
+    this.grabacionDetenida.set(true);
+  }
+
+  async regrabar(): Promise<void> {
+    this.grabacionDetenida.set(false);
+    this.audioBlob.set(null);
+    this.textoRespuesta.set('');
+    await this.iniciarGrabacion();
   }
 
   async enviarRespuesta(): Promise<void> {
@@ -139,10 +160,15 @@ export class SesionVivoCandidatoComponent implements OnInit, OnDestroy {
 
     this.respondiendo.set(true);
 
-    // Stop recording and get transcription
-    const { texto } = await this.audioService.detenerGrabacion();
-    const contenido = texto || '(Sin respuesta audible)';
+    // If still recording, stop first
+    if (this.grabando()) {
+      await this.detenerGrabacion();
+    }
+
+    const contenido = this.textoRespuesta() || '(Sin respuesta audible)';
     const tiempoUsado = this.segundosPregunta();
+    const audioBlobActual = this.audioBlob();
+    const preguntaIdActual = p.preguntaId;
 
     clearInterval(this.timerInterval);
 
@@ -152,8 +178,19 @@ export class SesionVivoCandidatoComponent implements OnInit, OnDestroy {
       tiempoUsadoSegundos: tiempoUsado
     }, this.token).subscribe({
       next: async (siguiente) => {
+        // Upload audio in background (fire and forget)
+        if (audioBlobActual) {
+          this.sesionService.subirAudio(this.sesionId, preguntaIdActual, audioBlobActual, this.token)
+            .subscribe({
+              error: () => console.warn('Error al subir audio, la transcripción fue guardada.')
+            });
+        }
+
         this.preguntasRespondidas.update(v => v + 1);
         this.respondiendo.set(false);
+        this.grabacionDetenida.set(false);
+        this.audioBlob.set(null);
+        this.textoRespuesta.set('');
 
         if (!siguiente || !(siguiente as PreguntaEnVivoDto).preguntaId) {
           // Session completed
@@ -199,7 +236,11 @@ export class SesionVivoCandidatoComponent implements OnInit, OnDestroy {
       // Auto-submit if time limit exceeded
       const p = this.pregunta();
       if (p && p.tiempoLimiteSegundos > 0 && this.segundosPregunta() >= p.tiempoLimiteSegundos) {
-        this.enviarRespuesta();
+        if (this.grabando()) {
+          this.detenerGrabacion().then(() => this.enviarRespuesta());
+        } else {
+          this.enviarRespuesta();
+        }
       }
     }, 1000);
   }

@@ -87,6 +87,14 @@ public class SesionesController : ControllerBase
         return Ok(new { message = "Sesión finalizada." });
     }
 
+    [HttpPost("{sesionId:guid}/cancelar")]
+    public async Task<IActionResult> CancelarSesion(Guid sesionId)
+    {
+        var evaluadorId = ObtenerUsuarioId();
+        await _sesionService.CancelarSesionPorEvaluadorAsync(sesionId, evaluadorId);
+        return Ok(new { message = "Sesión cancelada." });
+    }
+
     private Guid ObtenerUsuarioId()
         => Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value
             ?? throw new UnauthorizedAccessException("Token de usuario inválido."));
@@ -157,5 +165,17 @@ public class SesionVivoPublicaController : ControllerBase
             .SendAsync("SesionCompletada");
 
         return Ok(new { message = "Sesión finalizada." });
+    }
+
+    [HttpPost("{sesionId:guid}/audio/{preguntaId:guid}")]
+    [RequestSizeLimit(25 * 1024 * 1024)]
+    public async Task<IActionResult> SubirAudio(
+        Guid sesionId,
+        Guid preguntaId,
+        [FromHeader(Name = "X-Candidato-Token")] string token,
+        IFormFile audio)
+    {
+        await _sesionService.GuardarAudioRespuestaAsync(sesionId, token, preguntaId, audio);
+        return Ok(new { message = "Audio guardado correctamente." });
     }
 }

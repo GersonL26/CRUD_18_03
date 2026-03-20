@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
@@ -16,7 +17,7 @@ import { ScoreBadgeComponent } from '../../shared/components/score-badge/score-b
   selector: 'app-comparar',
   imports: [
     MatCardModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule,
-    MatTableModule, BaseChartDirective, ScoreBadgeComponent
+    MatTableModule, MatTooltipModule, BaseChartDirective, ScoreBadgeComponent
   ],
   templateUrl: './comparar.component.html',
   styleUrl: './comparar.component.scss',
@@ -35,10 +36,7 @@ export class CompararComponent implements OnInit {
     const labels = c.candidatos[0].scoresPorPregunta.map(s => `P${s.ordenEnEvaluacion}`);
     const datasets = c.candidatos.map((cand, i) => ({
       label: cand.nombre,
-      data: cand.scoresPorPregunta.map(s => {
-        const max = s.puntajeMaximo || 1;
-        return ((s.scoreIA ?? 0) / max) * 100;
-      }),
+      data: cand.scoresPorPregunta.map(s => s.scoreIA ?? 0),
       borderColor: this.coloresGrafica[i % this.coloresGrafica.length],
       backgroundColor: this.coloresGrafica[i % this.coloresGrafica.length] + '20',
       pointBackgroundColor: this.coloresGrafica[i % this.coloresGrafica.length],

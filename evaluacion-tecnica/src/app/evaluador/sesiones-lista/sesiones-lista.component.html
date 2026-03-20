@@ -1,60 +1,182 @@
 <div class="max-w-7xl mx-auto">
+  <!-- Page Header -->
   <div class="page-header">
-    <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md" style="background: linear-gradient(135deg, #10b981, #059669);">
+    <div class="w-11 h-11 rounded-xl flex items-center justify-center shadow-md"
+         style="background: linear-gradient(135deg, #10b981, #059669);">
       <mat-icon class="text-white !text-xl !w-5 !h-5">videocam</mat-icon>
     </div>
-    <div>
+    <div class="flex-1">
       <p class="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-0.5">En Vivo</p>
       <h1>Sesiones en Vivo</h1>
     </div>
   </div>
 
   @if (cargando()) {
-    <app-loading-spinner mensaje="Cargando evaluaciones activas..." />
-  } @else if (evaluaciones().length === 0) {
+    <app-loading-spinner mensaje="Cargando sesiones activas..." />
+  } @else if (items().length === 0) {
     <app-empty-state
       icono="videocam_off"
       titulo="No hay evaluaciones activas"
       mensaje="Las sesiones en vivo solo están disponibles para evaluaciones con estado Activa." />
   } @else {
-    <mat-card class="!rounded-xl !shadow-sm">
-      <table mat-table [dataSource]="evaluaciones()" class="w-full">
-        <ng-container matColumnDef="titulo">
-          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Evaluación</th>
-          <td mat-cell *matCellDef="let e" class="!font-medium">{{ e.titulo }}</td>
-        </ng-container>
+    <!-- Summary chips -->
+    <div class="flex flex-wrap gap-3 mb-6">
+      <div class="stat-chip bg-green-50 text-green-700 border border-green-200">
+        <mat-icon class="!text-base">check_circle</mat-icon>
+        <span class="font-semibold">{{ totalRespondieron() }}</span>
+        <span>respondieron</span>
+      </div>
+      <div class="stat-chip bg-amber-50 text-amber-700 border border-amber-200">
+        <mat-icon class="!text-base">hourglass_empty</mat-icon>
+        <span class="font-semibold">{{ totalPendientes() }}</span>
+        <span>pendientes</span>
+      </div>
+      @if (totalSinAnalisis() > 0) {
+        <div class="stat-chip bg-purple-50 text-purple-700 border border-purple-200">
+          <mat-icon class="!text-base">pending_actions</mat-icon>
+          <span class="font-semibold">{{ totalSinAnalisis() }}</span>
+          <span>sin análisis IA</span>
+        </div>
+      }
+    </div>
 
-        <ng-container matColumnDef="tecnologia">
-          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Tecnología</th>
-          <td mat-cell *matCellDef="let e">{{ e.tecnologia }}</td>
-        </ng-container>
+    <!-- Evaluation cards -->
+    <div class="space-y-4">
+      @for (item of items(); track item.evaluacion.id) {
+        <mat-card class="!rounded-xl !shadow-sm overflow-hidden">
 
-        <ng-container matColumnDef="nivel">
-          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Nivel</th>
-          <td mat-cell *matCellDef="let e">{{ e.nivel | nivelBadge }}</td>
-        </ng-container>
+          <!-- Evaluation header (click to expand/collapse) -->
+          <div class="ev-header" (click)="toggleExpandir(item)">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="ev-icon flex-shrink-0">
+                <mat-icon>quiz</mat-icon>
+              </div>
+              <div class="min-w-0">
+                <p class="font-semibold text-gray-900 text-sm leading-tight truncate">{{ item.evaluacion.titulo }}</p>
+                <p class="text-xs text-slate-500 mt-0.5">
+                  {{ item.evaluacion.tecnologia }} · {{ item.evaluacion.nivel | nivelBadge }} · {{ item.evaluacion.tiempoLimiteTotalMinutos }} min
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs text-slate-400 hidden sm:inline">{{ item.candidatos.length }} candidatos</span>
+              <button mat-icon-button class="!w-8 !h-8 !text-slate-400"
+                      (click)="$event.stopPropagation(); irADetalle(item.evaluacion.id)"
+                      matTooltip="Ir a la evaluación">
+                <mat-icon class="!text-base">open_in_new</mat-icon>
+              </button>
+              <mat-icon class="text-slate-400 expand-arrow" [class.rotated]="item.expandida">expand_more</mat-icon>
+            </div>
+          </div>
 
-        <ng-container matColumnDef="estado">
-          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Estado</th>
-          <td mat-cell *matCellDef="let e">
-            <mat-chip highlighted>Activa</mat-chip>
-          </td>
-        </ng-container>
+          <!-- Candidates table -->
+          @if (item.expandida) {
+            @if (item.candidatos.length === 0) {
+              <div class="px-6 py-8 text-center">
+                <mat-icon class="!text-3xl text-slate-300 block mx-auto mb-2">person_off</mat-icon>
+                <p class="text-sm text-slate-400">Sin candidatos asignados a esta evaluación.</p>
+                <button mat-stroked-button class="!text-xs !mt-3" (click)="irADetalle(item.evaluacion.id)">
+                  <mat-icon class="!text-sm">add</mat-icon> Asignar candidatos
+                </button>
+              </div>
+            } @else {
+              <table mat-table [dataSource]="item.candidatos" class="w-full candidates-table">
 
-        <ng-container matColumnDef="acciones">
-          <th mat-header-cell *matHeaderCellDef class="!font-semibold">Acciones</th>
-          <td mat-cell *matCellDef="let e">
-            <button mat-flat-button color="primary" (click)="irADetalle(e.id)">
-              <mat-icon>play_arrow</mat-icon>
-              Gestionar
-            </button>
-          </td>
-        </ng-container>
+                <!-- Candidato -->
+                <ng-container matColumnDef="candidato">
+                  <th mat-header-cell *matHeaderCellDef>Candidato</th>
+                  <td mat-cell *matCellDef="let c">
+                    <div class="flex flex-col">
+                      <span class="font-medium text-gray-800 text-sm">{{ c.nombre }}</span>
+                      <span class="text-xs text-slate-400">{{ c.email }}</span>
+                    </div>
+                  </td>
+                </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="columnas"></tr>
-        <tr mat-row *matRowDef="let row; columns: columnas"
-            class="hover:bg-gray-50 cursor-pointer transition-colors"></tr>
-      </table>
-    </mat-card>
+                <!-- Estado -->
+                <ng-container matColumnDef="estado">
+                  <th mat-header-cell *matHeaderCellDef>Estado</th>
+                  <td mat-cell *matCellDef="let c">
+                    <span [class]="'estado-chip estado-' + estadoCandidato(c)">
+                      @if (estadoCandidato(c) === 'en-progreso') {
+                        <span class="pulse-dot"></span>
+                      }
+                      {{ labelEstado(c) }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Fechas -->
+                <ng-container matColumnDef="fechas">
+                  <th mat-header-cell *matHeaderCellDef>Fechas</th>
+                  <td mat-cell *matCellDef="let c">
+                    <div class="text-xs space-y-0.5">
+                      @if (c.fechaInicioRespuesta) {
+                        <div class="text-slate-500">Inició: {{ c.fechaInicioRespuesta | date:'dd/MM HH:mm' }}</div>
+                      }
+                      @if (c.fechaFinRespuesta) {
+                        <div class="text-green-600 font-semibold">Finalizó: {{ c.fechaFinRespuesta | date:'dd/MM HH:mm' }}</div>
+                      }
+                      @if (!c.fechaInicioRespuesta) {
+                        <div class="text-slate-400 italic">Sin iniciar</div>
+                      }
+                    </div>
+                  </td>
+                </ng-container>
+
+                <!-- Foco -->
+                <ng-container matColumnDef="foco">
+                  <th mat-header-cell *matHeaderCellDef>Foco</th>
+                  <td mat-cell *matCellDef="let c">
+                    <span [class]="c.vecesSalioFoco > 3 ? 'foco foco-warn' : 'foco foco-ok'"
+                          [matTooltip]="'Salió del foco ' + c.vecesSalioFoco + ' veces'">
+                      <mat-icon class="!text-sm">{{ c.vecesSalioFoco > 3 ? 'warning' : 'visibility' }}</mat-icon>
+                      {{ c.vecesSalioFoco }}
+                    </span>
+                  </td>
+                </ng-container>
+
+                <!-- Acciones -->
+                <ng-container matColumnDef="acciones">
+                  <th mat-header-cell *matHeaderCellDef>Acciones</th>
+                  <td mat-cell *matCellDef="let c">
+                    <div class="flex gap-1.5 flex-wrap">
+                      @if (!c.fechaFinRespuesta) {
+                        <button mat-stroked-button color="primary" class="action-btn"
+                                (click)="irASesion(item.evaluacion, c)"
+                                matTooltip="Iniciar entrevista presencial">
+                          <mat-icon class="!text-sm">play_circle</mat-icon>
+                          Sesión
+                        </button>
+                      }
+                      @if (c.fechaFinRespuesta) {
+                        <button mat-stroked-button class="action-btn"
+                                (click)="verRespuestas(item.evaluacion, c)"
+                                matTooltip="Ver respuestas sin análisis IA">
+                          <mat-icon class="!text-sm">assignment</mat-icon>
+                          Respuestas
+                        </button>
+                      }
+                      @if (c.tieneResultado) {
+                        <button mat-flat-button color="primary" class="action-btn"
+                                (click)="verResultado(item.evaluacion, c)"
+                                matTooltip="Ver resultado con análisis IA">
+                          <mat-icon class="!text-sm">analytics</mat-icon>
+                          Resultado
+                        </button>
+                      }
+                    </div>
+                  </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="columnasCandidatos"></tr>
+                <tr mat-row *matRowDef="let row; columns: columnasCandidatos"
+                    class="candidates-row"></tr>
+              </table>
+            }
+          }
+        </mat-card>
+      }
+    </div>
   }
 </div>

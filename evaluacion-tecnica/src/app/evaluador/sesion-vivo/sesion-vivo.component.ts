@@ -8,7 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { SesionService } from '../../core/services/sesion/sesion.service';
+import { ResultadoService } from '../../core/services/resultado/resultado.service';
 import { AudioTranscripcionService } from '../../core/services/audio/audio-transcripcion.service';
 import { EstadoSesionDto, PreguntaEnVivoDto } from '../../core/models/sesion.model';
 
@@ -24,7 +26,7 @@ interface HistorialPregunta {
   imports: [
     FormsModule,
     MatCardModule, MatButtonModule, MatIconModule,
-    MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule
+    MatProgressSpinnerModule, MatProgressBarModule, MatChipsModule, MatTooltipModule
   ],
   templateUrl: './sesion-vivo.component.html',
   styleUrl: './sesion-vivo.component.scss',
@@ -35,6 +37,8 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
   cargando = signal(true);
   sesionIniciada = signal(false);
   sesionCompletada = signal(false);
+  sesionPausada = signal(false);
+  cancelando = signal(false);
   historial = signal<HistorialPregunta[]>([]);
   segundosTimer = signal(0);
 
@@ -43,6 +47,11 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
   transcribiendoWhisper = signal(false);
   enviandoRespuesta = signal(false);
   ultimoAudioBlob = signal<Blob | null>(null);
+
+  // Analysis state
+  analizando = signal(false);
+  analisisCompletado = signal(false);
+  resultadoCandidatoId = signal<string | null>(null);
 
   progreso = computed(() => {
     const p = this.preguntaActual();
@@ -53,6 +62,7 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private sesionService = inject(SesionService);
+  private resultadoService = inject(ResultadoService);
   private audioService = inject(AudioTranscripcionService);
   private snackBar = inject(MatSnackBar);
 
@@ -110,6 +120,35 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.cargando.set(false);
         const msg = err?.error?.message || 'Error al iniciar';
+        this.snackBar.open(typeof msg === 'string' ? msg : 'Error', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  togglePausa(): void {
+    if (this.grabando()) {
+      this.audioService.detenerGrabacion().then(result => {
+        if (result.texto) this.transcripcionTexto.set(result.texto);
+        if (result.audioBlob) this.ultimoAudioBlob.set(result.audioBlob);
+      });
+    }
+    this.sesionPausada.update(v => !v);
+  }
+
+  cancelarSesion(): void {
+    if (!confirm('¿Cancelar la sesión? La sesión será eliminada y no podrá recuperarse. Las respuestas registradas hasta ahora se perderán.')) return;
+
+    this.cancelando.set(true);
+    this.sesionService.cancelarPorEvaluador(this.sesionId).subscribe({
+      next: () => {
+        this.cancelando.set(false);
+        clearInterval(this.timerInterval);
+        this.snackBar.open('Sesión cancelada', 'OK', { duration: 3000 });
+        this.volver();
+      },
+      error: (err) => {
+        this.cancelando.set(false);
+        const msg = err?.error?.message || 'Error al cancelar';
         this.snackBar.open(typeof msg === 'string' ? msg : 'Error', 'OK', { duration: 3000 });
       }
     });
@@ -173,10 +212,7 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
         this.audioService.resetear();
 
         if (res.completada) {
-          this.sesionCompletada.set(true);
-          this.sesionIniciada.set(false);
-          clearInterval(this.timerInterval);
-          this.snackBar.open('Entrevista completada', 'OK', { duration: 3000 });
+          this.completarSesion();
         } else {
           this.preguntaActual.set(res as PreguntaEnVivoDto);
           this.agregarHistorial(res as PreguntaEnVivoDto);
@@ -196,14 +232,45 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
 
     this.sesionService.finalizarPorEvaluador(this.sesionId).subscribe({
       next: () => {
-        this.sesionCompletada.set(true);
-        this.sesionIniciada.set(false);
-        clearInterval(this.timerInterval);
-        this.snackBar.open('Entrevista finalizada', 'OK', { duration: 3000 });
+        this.completarSesion();
       },
       error: (err) => {
         const msg = err?.error?.message || 'Error al finalizar';
         this.snackBar.open(typeof msg === 'string' ? msg : 'Error', 'OK', { duration: 3000 });
+      }
+    });
+  }
+
+  irAResultado(): void {
+    const candidatoId = this.resultadoCandidatoId() ?? this.estado()?.candidatoId;
+    if (candidatoId && this.evaluacionId) {
+      this.router.navigate(['/evaluador/evaluacion', this.evaluacionId, 'resultado', candidatoId]);
+    }
+  }
+
+  private completarSesion(): void {
+    this.sesionCompletada.set(true);
+    this.sesionIniciada.set(false);
+    clearInterval(this.timerInterval);
+    this.snackBar.open('Entrevista completada — iniciando análisis IA...', '', { duration: 3000 });
+    this.ejecutarAnalisis();
+  }
+
+  private ejecutarAnalisis(): void {
+    const candidatoId = this.estado()?.candidatoId;
+    if (!candidatoId) return;
+
+    this.analizando.set(true);
+    this.resultadoService.ejecutarAnalisis(candidatoId).subscribe({
+      next: () => {
+        this.analizando.set(false);
+        this.analisisCompletado.set(true);
+        this.resultadoCandidatoId.set(candidatoId);
+      },
+      error: () => {
+        this.analizando.set(false);
+        // Analysis failed but session is done — don't block the user
+        this.snackBar.open('El análisis IA no pudo completarse. Puede ejecutarlo manualmente desde la evaluación.', 'OK', { duration: 6000 });
       }
     });
   }
@@ -220,7 +287,9 @@ export class SesionVivoComponent implements OnInit, OnDestroy {
   private iniciarTimer(): void {
     clearInterval(this.timerInterval);
     this.timerInterval = setInterval(() => {
-      this.segundosTimer.update(v => v + 1);
+      if (!this.sesionPausada()) {
+        this.segundosTimer.update(v => v + 1);
+      }
     }, 1000);
   }
 

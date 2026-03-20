@@ -1,4 +1,5 @@
 using CRUD_18_03.Application.DTOs.Candidato;
+using CRUD_18_03.Application.DTOs.Respuesta;
 using CRUD_18_03.Application.Interfaces;
 using CRUD_18_03.Domain.Entities;
 using CRUD_18_03.Domain.Enums;
@@ -60,7 +61,7 @@ public class CandidatoService : ICandidatoService
             .FirstOrDefaultAsync(e => e.Id == evaluacionId && e.EstaActivo)
             ?? throw new KeyNotFoundException($"Evaluación con ID '{evaluacionId}' no encontrada.");
 
-        if (evaluacion.EvaluadorId != evaluadorId)
+        if (evaluadorId != Guid.Empty && evaluacion.EvaluadorId != evaluadorId)
             throw new UnauthorizedAccessException("No tiene permiso para acceder a esta evaluación.");
 
         var candidatos = await _dbContext.Candidatos
@@ -71,6 +72,43 @@ public class CandidatoService : ICandidatoService
             .ToListAsync();
 
         return candidatos.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<RespuestaCrudaDto>> ObtenerRespuestasCrudasAsync(
+        Guid evaluacionId, Guid candidatoId, Guid evaluadorId)
+    {
+        var evaluacion = await _dbContext.Evaluaciones
+            .Include(e => e.Preguntas.Where(p => p.EstaActivo))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == evaluacionId && e.EstaActivo)
+            ?? throw new KeyNotFoundException($"Evaluación con ID '{evaluacionId}' no encontrada.");
+
+        if (evaluadorId != Guid.Empty && evaluacion.EvaluadorId != evaluadorId)
+            throw new UnauthorizedAccessException("No tiene permiso para acceder a esta evaluación.");
+
+        var candidato = await _dbContext.Candidatos
+            .Include(c => c.Respuestas.Where(r => r.EstaActivo))
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == candidatoId && c.EvaluacionId == evaluacionId && c.EstaActivo)
+            ?? throw new KeyNotFoundException($"Candidato '{candidatoId}' no encontrado.");
+
+        return evaluacion.Preguntas
+            .OrderBy(p => p.OrdenEnEvaluacion)
+            .Select(p =>
+            {
+                var r = candidato.Respuestas.FirstOrDefault(r => r.PreguntaId == p.Id);
+                return new RespuestaCrudaDto
+                {
+                    Orden = p.OrdenEnEvaluacion,
+                    Pregunta = p.Texto,
+                    Tipo = (int)p.Tipo,
+                    PuntajeMaximo = p.PuntajeMaximo,
+                    Contenido = r?.Contenido,
+                    TiempoUsadoSegundos = r?.TiempoUsadoSegundos,
+                    FechaRespuesta = r?.Timestamp
+                };
+            })
+            .ToList();
     }
 
     public async Task EliminarAsync(Guid evaluacionId, Guid candidatoId, Guid evaluadorId)

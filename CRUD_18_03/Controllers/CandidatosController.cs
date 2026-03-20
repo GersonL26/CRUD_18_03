@@ -37,9 +37,17 @@ public class CandidatosController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Listar(Guid evaluacionId)
     {
-        var evaluadorId = ObtenerUsuarioId();
+        var evaluadorId = User.IsInRole("Admin") ? Guid.Empty : ObtenerUsuarioId();
         var candidatos = await _candidatoService.ListarPorEvaluacionAsync(evaluacionId, evaluadorId);
         return Ok(candidatos);
+    }
+
+    [HttpGet("{candidatoId:guid}/respuestas")]
+    public async Task<IActionResult> ObtenerRespuestasCrudas(Guid evaluacionId, Guid candidatoId)
+    {
+        var evaluadorId = User.IsInRole("Admin") ? Guid.Empty : ObtenerUsuarioId();
+        var respuestas = await _candidatoService.ObtenerRespuestasCrudasAsync(evaluacionId, candidatoId, evaluadorId);
+        return Ok(respuestas);
     }
 
     [HttpDelete("{candidatoId:guid}")]

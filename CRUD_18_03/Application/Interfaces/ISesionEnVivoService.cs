@@ -1,4 +1,5 @@
 using CRUD_18_03.Application.DTOs.SesionEnVivo;
+using Microsoft.AspNetCore.Http;
 
 namespace CRUD_18_03.Application.Interfaces;
 
@@ -10,10 +11,12 @@ public interface ISesionEnVivoService
     Task<PreguntaEnVivoDto> ObtenerPreguntaActualAsync(Guid sesionId, string tokenCandidato);
     Task<PreguntaEnVivoDto?> ResponderYAvanzarAsync(Guid sesionId, string tokenCandidato, ResponderPreguntaEnVivoDto dto);
     Task FinalizarSesionAsync(Guid sesionId, string tokenCandidato);
+    Task GuardarAudioRespuestaAsync(Guid sesionId, string tokenCandidato, Guid preguntaId, IFormFile audio);
 
     // Evaluator-driven (in-person interview)
     Task<PreguntaEnVivoDto> IniciarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId);
     Task<PreguntaEnVivoDto> ObtenerPreguntaActualPorEvaluadorAsync(Guid sesionId, Guid evaluadorId);
     Task<PreguntaEnVivoDto?> ResponderYAvanzarPorEvaluadorAsync(Guid sesionId, Guid evaluadorId, ResponderPreguntaEnVivoDto dto);
     Task FinalizarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId);
+    Task CancelarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId);
 }

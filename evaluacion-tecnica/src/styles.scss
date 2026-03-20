@@ -138,3 +138,13 @@ body {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
+
+// ── Notification menu panel (rendered in CDK overlay, outside component scope) ──
+.notif-menu-panel .mat-mdc-menu-content {
+  padding: 0 !important;
+  width: min(360px, 92vw);
+  max-height: 70vh;
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}

@@ -3,121 +3,145 @@
     <mat-spinner diameter="48"></mat-spinner>
   </div>
 } @else {
-  <div class="sesion-container animate-fadeIn">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex items-center gap-4">
-        <button mat-icon-button (click)="volver()">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        <div>
-          <h2 class="text-2xl font-bold m-0">Entrevista Presencial</h2>
-          <p class="text-sm text-slate-500 m-0">
-            Candidato: <strong>{{ estado()?.nombreCandidato }}</strong>
-          </p>
-        </div>
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <button mat-icon-button class="back-btn" (click)="volver()" matTooltip="Volver a la evaluación">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <div class="header-icon">
+        <mat-icon>record_voice_over</mat-icon>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-semibold text-violet-600 uppercase tracking-widest mb-0.5">Entrevista Presencial</p>
+        <h1 class="truncate">{{ estado()?.nombreCandidato ?? 'Candidato' }}</h1>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0">
         @if (sesionIniciada()) {
-          <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-50 border border-red-200">
+          <div class="live-badge">
             <div class="live-pulse"></div>
-            <span class="text-xs font-bold text-red-600">EN VIVO</span>
+            <span>EN VIVO</span>
           </div>
         }
-        <mat-chip>
-          <mat-icon class="mr-1">timer</mat-icon>
-          {{ formatTiempo(segundosTimer()) }}
-        </mat-chip>
+        <div class="timer-display">
+          <mat-icon class="!text-base text-slate-400">timer</mat-icon>
+          <span class="font-mono font-bold text-slate-700">{{ formatTiempo(segundosTimer()) }}</span>
+        </div>
       </div>
     </div>
 
     @if (sesionCompletada()) {
       <!-- Completed State -->
-      <mat-card class="completed-card">
-        <div class="text-center py-10">
-          <mat-icon class="text-green-500 !text-6xl !w-16 !h-16 mb-4">check_circle</mat-icon>
-          <h3 class="text-xl font-bold text-green-700 mb-2">Entrevista Completada</h3>
-          <p class="text-slate-500 mb-4">Todas las respuestas fueron transcritas y guardadas. Puede proceder al análisis con IA desde la evaluación.</p>
-          <button mat-flat-button color="primary" (click)="volver()">
-            <mat-icon>arrow_back</mat-icon> Volver a Evaluación
-          </button>
-        </div>
-      </mat-card>
+      <div class="state-card-wrapper">
+        <mat-card class="!rounded-2xl !shadow-sm border border-green-100">
+          <mat-card-content class="py-12 px-8 text-center">
+            <div class="state-icon-wrap bg-green-50 mx-auto mb-5">
+              <mat-icon class="!text-4xl text-green-500">check_circle</mat-icon>
+            </div>
+            <h3 class="text-xl font-bold text-green-700 mb-2">Entrevista Completada</h3>
+            <p class="text-slate-500 max-w-sm mx-auto mb-6">
+              Todas las respuestas fueron transcritas y guardadas. Puede proceder al análisis con IA desde la evaluación.
+            </p>
+            <button mat-flat-button color="primary" class="!rounded-xl !px-6" (click)="volver()">
+              <mat-icon>arrow_back</mat-icon>
+              Volver a Evaluación
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
     } @else if (!sesionIniciada()) {
       <!-- Pre-start State -->
-      <mat-card class="waiting-card">
-        <div class="text-center py-10">
-          <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-blue-50 mb-6">
-            <mat-icon class="!text-4xl text-blue-500">record_voice_over</mat-icon>
-          </div>
-          <h3 class="text-xl font-bold mb-2">Entrevista presencial</h3>
-          <p class="text-slate-500 max-w-md mx-auto mb-2">
-            Asegúrese de tener el micrófono listo. Para cada pregunta, grabe la respuesta verbal del candidato y se transcribirá automáticamente.
-          </p>
-          <div class="flex flex-wrap justify-center gap-3 text-xs text-slate-400 mb-6">
-            <span class="flex items-center gap-1"><mat-icon class="!text-sm">mic</mat-icon> Grabar audio</span>
-            <span>→</span>
-            <span class="flex items-center gap-1"><mat-icon class="!text-sm">text_fields</mat-icon> Transcripción automática</span>
-            <span>→</span>
-            <span class="flex items-center gap-1"><mat-icon class="!text-sm">smart_toy</mat-icon> Análisis IA</span>
-          </div>
-          <button mat-flat-button color="primary" class="h-12 px-8 !text-base !rounded-xl" (click)="iniciarEntrevista()">
-            <mat-icon>play_arrow</mat-icon>
-            Iniciar Entrevista
-          </button>
-        </div>
-      </mat-card>
+      <div class="state-card-wrapper">
+        <mat-card class="!rounded-2xl !shadow-sm border border-gray-100">
+          <mat-card-content class="py-12 px-8 text-center">
+            <div class="state-icon-wrap bg-violet-50 mx-auto mb-5">
+              <mat-icon class="!text-4xl text-violet-500">record_voice_over</mat-icon>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Entrevista Presencial</h3>
+            <p class="text-slate-500 max-w-sm mx-auto mb-6">
+              Asegúrese de tener el micrófono listo. Para cada pregunta, grabe la respuesta verbal del candidato y se transcribirá automáticamente.
+            </p>
+            <div class="flow-steps mb-8">
+              <div class="flow-step">
+                <div class="flow-step-icon"><mat-icon>mic</mat-icon></div>
+                <span>Grabar audio</span>
+              </div>
+              <mat-icon class="text-slate-300">arrow_forward</mat-icon>
+              <div class="flow-step">
+                <div class="flow-step-icon"><mat-icon>text_fields</mat-icon></div>
+                <span>Transcripción automática</span>
+              </div>
+              <mat-icon class="text-slate-300">arrow_forward</mat-icon>
+              <div class="flow-step">
+                <div class="flow-step-icon"><mat-icon>smart_toy</mat-icon></div>
+                <span>Análisis IA</span>
+              </div>
+            </div>
+            <button mat-flat-button color="primary" class="!h-12 !px-8 !text-base !rounded-xl" (click)="iniciarEntrevista()">
+              <mat-icon>play_arrow</mat-icon>
+              Iniciar Entrevista
+            </button>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
     } @else {
       <!-- Live Interview Session -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Main: Current Question + Recording -->
-        <div class="lg:col-span-2 space-y-4">
+
+        <!-- Main Column -->
+        <div class="lg:col-span-2 space-y-5">
+
           <!-- Question Card -->
-          <mat-card class="question-card">
-            <mat-card-header>
-              <mat-card-title class="flex items-center gap-2">
-                <mat-icon class="text-blue-500">quiz</mat-icon>
-                Pregunta {{ preguntaActual()!.index + 1 }} de {{ preguntaActual()!.totalPreguntas }}
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
+          <mat-card class="question-card !rounded-xl !shadow-sm border border-gray-100">
+            <mat-card-content class="!p-6">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                  <div class="q-number-badge">
+                    {{ preguntaActual()!.index + 1 }}
+                  </div>
+                  <span class="text-xs text-slate-400 font-medium">de {{ preguntaActual()!.totalPreguntas }} preguntas</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                  <span class="flex items-center gap-1">
+                    <mat-icon class="inline-icon">emoji_events</mat-icon>
+                    {{ preguntaActual()!.puntajeMaximo }} pts
+                  </span>
+                  @if (preguntaActual()!.tiempoLimiteSegundos > 0) {
+                    <span class="flex items-center gap-1">
+                      <mat-icon class="inline-icon">schedule</mat-icon>
+                      {{ formatTiempo(preguntaActual()!.tiempoLimiteSegundos) }}
+                    </span>
+                  }
+                </div>
+              </div>
+
               <div class="question-text">
                 {{ preguntaActual()!.texto }}
               </div>
-              <div class="flex items-center gap-4 mt-4">
-                <span class="text-xs text-slate-500">
-                  <mat-icon class="inline-icon">emoji_events</mat-icon>
-                  Puntaje: {{ preguntaActual()!.puntajeMaximo }}
-                </span>
-                @if (preguntaActual()!.tiempoLimiteSegundos > 0) {
-                  <span class="text-xs text-slate-500">
-                    <mat-icon class="inline-icon">schedule</mat-icon>
-                    Límite: {{ formatTiempo(preguntaActual()!.tiempoLimiteSegundos) }}
-                  </span>
-                }
-              </div>
-              <!-- Progress -->
-              <div class="mt-4">
-                <div class="flex justify-between text-xs text-slate-500 mb-1">
-                  <span>Progreso</span>
-                  <span>{{ progreso() }}%</span>
+
+              <div class="mt-5">
+                <div class="flex justify-between text-xs text-slate-400 mb-1.5">
+                  <span>Progreso de la entrevista</span>
+                  <span class="font-semibold text-blue-600">{{ progreso() }}%</span>
                 </div>
-                <mat-progress-bar mode="determinate" [value]="progreso()"></mat-progress-bar>
+                <mat-progress-bar mode="determinate" [value]="progreso()" class="!rounded-full"></mat-progress-bar>
               </div>
             </mat-card-content>
           </mat-card>
 
           <!-- Recording Card -->
-          <mat-card class="recording-card">
-            <mat-card-header>
-              <mat-card-title class="flex items-center gap-2 text-sm">
+          <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
+            <mat-card-content class="!p-6">
+              <div class="section-label mb-4">
                 <mat-icon class="text-red-500">mic</mat-icon>
-                Grabación de Respuesta
-              </mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
+                <span>Grabación de Respuesta</span>
+              </div>
+
               <!-- Record button + audio level -->
-              <div class="flex items-center gap-6 mb-4">
+              <div class="flex items-center gap-6 mb-5">
                 <button mat-fab [class]="grabando() ? 'recording-active' : ''"
                         [color]="grabando() ? 'warn' : 'primary'"
                         (click)="toggleGrabacion()">
@@ -125,7 +149,7 @@
                 </button>
                 <div class="flex-1">
                   @if (grabando()) {
-                    <p class="text-sm font-semibold text-red-600 mb-1 flex items-center gap-2">
+                    <p class="text-sm font-semibold text-red-600 mb-2 flex items-center gap-2">
                       <span class="recording-dot"></span>
                       Grabando...
                     </p>
@@ -137,7 +161,7 @@
                     }
                   } @else {
                     <p class="text-sm text-slate-500">
-                      {{ transcripcionTexto() ? 'Grabación detenida. Revise la transcripción.' : 'Presione para grabar la respuesta del candidato.' }}
+                      {{ transcripcionTexto() ? 'Grabación detenida. Revise la transcripción.' : 'Presione el botón para grabar la respuesta del candidato.' }}
                     </p>
                   }
                 </div>
@@ -146,16 +170,14 @@
               <!-- Transcription area -->
               @if (transcripcionTexto() || transcribiendoWhisper()) {
                 <div class="transcription-area">
-                  <div class="flex items-center justify-between mb-2">
-                    <p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Transcripción</p>
-                    <div class="flex items-center gap-2">
-                      @if (ultimoAudioBlob() && !transcribiendoWhisper()) {
-                        <button mat-stroked-button class="!text-xs !h-8" (click)="enviarAWhisper()">
-                          <mat-icon class="!text-base">auto_fix_high</mat-icon>
-                          Re-transcribir con Whisper
-                        </button>
-                      }
-                    </div>
+                  <div class="flex items-center justify-between mb-3">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Transcripción</p>
+                    @if (ultimoAudioBlob() && !transcribiendoWhisper()) {
+                      <button mat-stroked-button class="!text-xs !h-8 !rounded-lg" (click)="enviarAWhisper()">
+                        <mat-icon class="!text-base">auto_fix_high</mat-icon>
+                        Re-transcribir con Whisper
+                      </button>
+                    }
                   </div>
                   @if (transcribiendoWhisper()) {
                     <div class="flex items-center gap-3 py-4 justify-center">
@@ -173,16 +195,19 @@
               }
 
               <!-- Action buttons -->
-              <div class="flex items-center justify-between mt-4">
-                <button mat-stroked-button color="warn" (click)="finalizarEntrevista()">
+              <div class="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+                <button mat-stroked-button color="warn" class="!rounded-lg" (click)="finalizarEntrevista()">
                   <mat-icon>stop_circle</mat-icon>
                   Finalizar Entrevista
                 </button>
                 <div class="flex items-center gap-2">
                   @if (enviandoRespuesta()) {
-                    <mat-spinner diameter="24"></mat-spinner>
+                    <div class="flex items-center gap-2 text-sm text-slate-500">
+                      <mat-spinner diameter="20"></mat-spinner>
+                      <span>Guardando...</span>
+                    </div>
                   } @else {
-                    <button mat-flat-button color="primary"
+                    <button mat-flat-button color="primary" class="!rounded-lg"
                             [disabled]="!transcripcionTexto().trim() || grabando()"
                             (click)="enviarRespuesta()">
                       <mat-icon>send</mat-icon>
@@ -195,56 +220,74 @@
           </mat-card>
         </div>
 
-        <!-- Sidebar: History -->
-        <div class="space-y-4">
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title class="text-sm">Historial de Preguntas</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              @if (historial().length === 0) {
-                <p class="text-sm text-slate-400">Aún no hay preguntas.</p>
-              } @else {
-                <div class="historial-list">
-                  @for (h of historial(); track h.index) {
-                    <div class="historial-item" [class.respondida]="h.respondida" [class.activa]="preguntaActual()?.index === h.index">
-                      <div class="flex items-center gap-2">
-                        <mat-icon class="!text-base">
-                          {{ h.respondida ? 'check_circle' : (preguntaActual()?.index === h.index ? 'radio_button_checked' : 'radio_button_unchecked') }}
-                        </mat-icon>
-                        <span class="font-medium text-sm">P{{ h.index + 1 }}</span>
+        <!-- Sidebar -->
+        <div class="space-y-5">
+
+          <!-- History Card -->
+          <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
+            <mat-card-content class="!p-0">
+              <div class="sidebar-card-header">
+                <mat-icon class="text-slate-400 !text-base">format_list_numbered</mat-icon>
+                <span>Historial de Preguntas</span>
+              </div>
+              <div class="px-4 pb-4">
+                @if (historial().length === 0) {
+                  <p class="text-sm text-slate-400 py-4 text-center">Aún no hay preguntas respondidas.</p>
+                } @else {
+                  <div class="historial-list">
+                    @for (h of historial(); track h.index) {
+                      <div class="historial-item"
+                           [class.respondida]="h.respondida"
+                           [class.activa]="preguntaActual()?.index === h.index">
+                        <div class="flex items-center gap-2">
+                          <mat-icon class="!text-base flex-shrink-0">
+                            {{ h.respondida ? 'check_circle' : (preguntaActual()?.index === h.index ? 'radio_button_checked' : 'radio_button_unchecked') }}
+                          </mat-icon>
+                          <span class="font-semibold text-sm">P{{ h.index + 1 }}</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1 ml-6 line-clamp-2">{{ h.texto }}</p>
+                        @if (h.transcripcion) {
+                          <p class="text-xs text-emerald-600 mt-1 ml-6 line-clamp-1 italic">« {{ h.transcripcion }} »</p>
+                        }
                       </div>
-                      <p class="text-xs text-slate-500 mt-1 ml-6 line-clamp-2">{{ h.texto }}</p>
-                      @if (h.transcripcion) {
-                        <p class="text-xs text-emerald-600 mt-1 ml-6 line-clamp-1 italic">« {{ h.transcripcion }} »</p>
-                      }
-                    </div>
-                  }
-                </div>
-              }
+                    }
+                  </div>
+                }
+              </div>
             </mat-card-content>
           </mat-card>
 
           <!-- Session Info Card -->
-          <mat-card>
-            <mat-card-header>
-              <mat-card-title class="text-sm">Información</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div class="info-row">
-                <span class="text-xs text-slate-500">Total preguntas</span>
-                <span class="font-semibold">{{ estado()?.totalPreguntas }}</span>
+          <mat-card class="!rounded-xl !shadow-sm border border-gray-100">
+            <mat-card-content class="!p-0">
+              <div class="sidebar-card-header">
+                <mat-icon class="text-slate-400 !text-base">info_outline</mat-icon>
+                <span>Información de Sesión</span>
               </div>
-              <div class="info-row">
-                <span class="text-xs text-slate-500">Tiempo total</span>
-                <span class="font-semibold">{{ formatTiempo(segundosTimer()) }}</span>
-              </div>
-              <div class="info-row">
-                <span class="text-xs text-slate-500">Modalidad</span>
-                <span class="font-semibold text-blue-600">Presencial</span>
+              <div class="px-4 pb-2">
+                <div class="info-row">
+                  <span class="text-xs text-slate-500">Candidato</span>
+                  <span class="font-semibold text-sm text-slate-700 truncate max-w-28">{{ estado()?.nombreCandidato }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="text-xs text-slate-500">Total preguntas</span>
+                  <span class="font-semibold text-sm">{{ estado()?.totalPreguntas }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="text-xs text-slate-500">Tiempo transcurrido</span>
+                  <span class="font-mono font-semibold text-sm text-blue-600">{{ formatTiempo(segundosTimer()) }}</span>
+                </div>
+                <div class="info-row">
+                  <span class="text-xs text-slate-500">Modalidad</span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-50 text-violet-700 text-xs font-semibold">
+                    <mat-icon class="!text-xs">mic</mat-icon>
+                    Presencial
+                  </span>
+                </div>
               </div>
             </mat-card-content>
           </mat-card>
+
         </div>
       </div>
     }

@@ -173,6 +173,33 @@ public class SesionEnVivoService : ISesionEnVivoService
         await _dbContext.SaveChangesAsync();
     }
 
+    public async Task GuardarAudioRespuestaAsync(Guid sesionId, string tokenCandidato, Guid preguntaId, IFormFile audio)
+    {
+        var sesion = await ObtenerSesionConDatos(sesionId);
+        ValidarTokenCandidato(sesion, tokenCandidato);
+
+        var respuesta = await _dbContext.Respuestas
+            .FirstOrDefaultAsync(r => r.CandidatoId == sesion.CandidatoId && r.PreguntaId == preguntaId && r.EstaActivo)
+            ?? throw new KeyNotFoundException("No se encontró la respuesta para asociar el audio.");
+
+        var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "uploads", "audio", sesionId.ToString());
+        Directory.CreateDirectory(uploadsDir);
+
+        var extension = Path.GetExtension(audio.FileName);
+        if (string.IsNullOrEmpty(extension)) extension = ".webm";
+        var fileName = $"{preguntaId}{extension}";
+        var filePath = Path.Combine(uploadsDir, fileName);
+
+        using (var stream = new FileStream(filePath, FileMode.Create))
+        {
+            await audio.CopyToAsync(stream);
+        }
+
+        respuesta.AudioUrl = $"/uploads/audio/{sesionId}/{fileName}";
+        respuesta.ModificadoEn = DateTime.UtcNow;
+        await _dbContext.SaveChangesAsync();
+    }
+
     private async Task<SesionEnVivo> ObtenerSesionConDatos(Guid sesionId)
     {
         return await _dbContext.SesionesEnVivo
@@ -291,6 +318,20 @@ public class SesionEnVivoService : ISesionEnVivoService
             sesion.Candidato.FechaFinRespuesta = DateTime.UtcNow;
             sesion.Candidato.ModificadoEn = DateTime.UtcNow;
         }
+
+        await _dbContext.SaveChangesAsync();
+    }
+
+    public async Task CancelarSesionPorEvaluadorAsync(Guid sesionId, Guid evaluadorId)
+    {
+        var sesion = await ObtenerSesionConDatosYValidarEvaluador(sesionId, evaluadorId);
+
+        if (sesion.FueCompletada)
+            throw new InvalidOperationException("No se puede cancelar una sesión ya completada.");
+
+        sesion.SesionActiva = false;
+        sesion.EstaActivo = false;
+        sesion.ModificadoEn = DateTime.UtcNow;
 
         await _dbContext.SaveChangesAsync();
     }
