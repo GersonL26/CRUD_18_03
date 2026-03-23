@@ -13,15 +13,21 @@ CRUD_18_03.Domain             → Entidades de dominio
 CRUD_18_03.Infrastructure     → EF Core, DbContext, repositorio genérico
 ```
 
-## Credenciales MySQL (DBeaver)
+## Configuracion Segura
 
-| Campo        | Valor                              |
-|--------------|-------------------------------------|
-| Host         | mysql-k3s-dev.grupofarsiman.io     |
-| Puerto       | 3306                               |
-| Base de datos| CrudGenerico                       |
-| Usuario      | desarrollo                         |
-| Contraseña   | dsrcorp                            |
+Este repositorio no debe almacenar credenciales reales. Configure valores sensibles con variables de entorno o User Secrets.
+
+Ejemplo con User Secrets en la API:
+
+```bash
+dotnet user-secrets init --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Server=localhost,1433;Database=EvaluacionTecnicaDB;User Id=sa;Password=TU_PASSWORD;TrustServerCertificate=True;" --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "Jwt:Key" "TU_JWT_KEY_32_CHARS_MIN" --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "Jwt:Issuer" "EvaluacionTecnicaAPI" --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "Jwt:Audience" "EvaluacionTecnicaFrontend" --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "OpenAI:ApiKey" "TU_OPENAI_API_KEY" --project CRUD_18_03/CRUD_18_03.csproj
+dotnet user-secrets set "PowerAutomate:EndpointUrl" "TU_POWER_AUTOMATE_ENDPOINT" --project CRUD_18_03/CRUD_18_03.csproj
+```
 
 ## Endpoints
 
